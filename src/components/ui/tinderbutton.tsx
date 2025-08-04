@@ -4,11 +4,13 @@ import { cn } from "@/src/lib/utils";
 
 interface TinderButtonProps {
   variant: "google" | "facebook" | "color" | "signup";
-  href: string;
+  href?: string;
   children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
-const TinderButton: React.FC<TinderButtonProps> = ({ variant, href, children }) => {
+const TinderButton: React.FC<TinderButtonProps> = ({ variant, href, children, onClick, disabled }) => {
   const baseClasses = "flex items-center justify-center gap-4 font-semibold rounded-full py-3 px-6 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-500 w-full";
   const variantClasses = {
     color: "bg-gradient-to-br from-pink-600 via-pink-500 to-orange-500 text-background",
@@ -23,8 +25,26 @@ const TinderButton: React.FC<TinderButtonProps> = ({ variant, href, children }) 
     signup: null,
   };
 
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(
+          baseClasses,
+          variantClasses[variant],
+          disabled ? "opacity-60 cursor-not-allowed" : ""
+        )}
+      >
+        {icon[variant] && <div className="w-7 h-7">{icon[variant]}</div>}
+        {children}
+      </button>
+    );
+  }
+
   return (
-    <Link href={href} className={cn(baseClasses, variantClasses[variant])}>
+    <Link href={href || "#"} className={cn(baseClasses, variantClasses[variant])}>
       {icon[variant] && <div className="w-7 h-7">{icon[variant]}</div>}
       {children}
     </Link>

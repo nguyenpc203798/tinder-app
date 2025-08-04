@@ -1,8 +1,30 @@
 // import Link from "next/link";
+"use client";
 import Image from "next/image";
 import TinderButton from "@/src/components/ui/tinderbutton";
+import { useState } from "react";
+import { createClient } from "@/src/lib/supabase/client";
+import type { Provider } from "@supabase/supabase-js";
 
 export default function Home() {
+  const [loading, setLoading] = useState(false);
+  const supabase = createClient();
+
+  const handleLoginWithGoogle = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google" as Provider,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+    if (error) {
+      alert("Đăng nhập thất bại: " + error.message);
+      setLoading(false);
+    }
+    // Nếu thành công, Supabase sẽ tự redirect
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-600 via-pink-500 to-orange-500 flex flex-col justify-center items-center px-6 py-16 text-white font-sans">
       <>
@@ -10,8 +32,8 @@ export default function Home() {
         <div className="mb-12 flex justify-center items-center w-full max-w-xs">
           <Image src="/images/tinderlogo.png" alt="Logo" width={50} height={50} />
           <h1 className="ml-4 text-4xl font-extrabold tracking-tight">
-            tinder
-          </h1>
+            Tinder
+          </h1> 
         </div>
         {/* Text info */}
         <p className="mb-10 max-w-md text-center text-base font-medium leading-relaxed">
@@ -31,8 +53,12 @@ export default function Home() {
         </p>
         {/* Buttons */}
         <div className="w-full max-w-md space-y-5">
-          <TinderButton variant="google" href="/">
-            Tiếp tục với Google
+          <TinderButton
+            variant="google"
+            onClick={handleLoginWithGoogle}
+            disabled={loading}
+          >
+            {loading ? "Đang đăng nhập..." : "Tiếp tục với Google"}
           </TinderButton>
           <TinderButton variant="facebook" href="/">
             Tiếp tục với Facebook

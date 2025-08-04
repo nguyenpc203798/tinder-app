@@ -21,17 +21,17 @@ export default function Page() {
       </Link>
       {/* Text info */}
       <p className="mb-10 max-w-md text-center text-base font-medium leading-relaxed">
-        Khi nhấn Đăng ký, bạn đồng ý với{" "}
+        By clicking Sign Up, you agree to our{" "}
         <a href="#" className="underline font-semibold">
-          Điều khoản
+          Terms
+        </a>
+        . Learn how we process your data in our{" "}
+        <a href="#" className="underline font-semibold">
+          Privacy Policy
         </a>{" "}
-        của chúng tôi. Tìm hiểu về cách chúng tôi xử lý dữ liệu của bạn trong{" "}
+        and{" "}
         <a href="#" className="underline font-semibold">
-          Chính sách Quyền riêng tư
-        </a>{" "}
-        và{" "}
-        <a href="#" className="underline font-semibold">
-          Chính sách Cookie
+          Cookie Policy
         </a>
         .
       </p>
