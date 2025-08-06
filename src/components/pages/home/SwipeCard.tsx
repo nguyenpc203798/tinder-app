@@ -1,0 +1,139 @@
+import { useState, useRef } from 'react';
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Briefcase, GraduationCap } from 'lucide-react';
+import type { StaticImageData } from "next/image";
+import Image from "next/image";
+
+interface Profile {
+  id: number;
+  name: string;
+  age: number;
+  image: string | StaticImageData;
+  distance: number;
+  bio: string;
+  job?: string;
+  education?: string;
+  location: string;
+}
+
+interface SwipeCardProps {
+  profile: Profile;
+  onSwipe: (direction: 'left' | 'right', profileId: number) => void;
+  style?: React.CSSProperties;
+}
+
+export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: e.clientX - rect.left - rect.width / 2,
+        y: e.clientY - rect.top - rect.height / 2,
+      });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !cardRef.current) return;
+
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const deltaX = e.clientX - centerX - dragOffset.x;
+    const deltaY = e.clientY - centerY - dragOffset.y;
+    
+    const rotation = Math.min(Math.max(deltaX / 10, -15), 15);
+    
+    cardRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
+    
+    // Add visual feedback
+    const opacity = Math.max(0, 1 - Math.abs(deltaX) / 150);
+    cardRef.current.style.opacity = opacity.toString();
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging || !cardRef.current) return;
+    
+    setIsDragging(false);
+    
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const deltaX = e.clientX - centerX - dragOffset.x;
+    
+    if (Math.abs(deltaX) > 100) {
+      const direction = deltaX > 0 ? 'right' : 'left';
+      cardRef.current.classList.add(direction === 'left' ? 'animate-swipe-left' : 'animate-swipe-right');
+      
+      setTimeout(() => {
+        onSwipe(direction, profile.id);
+      }, 600);
+    } else {
+      // Snap back
+      cardRef.current.style.transform = 'translate(0px, 0px) rotate(0deg)';
+      cardRef.current.style.opacity = '1';
+    }
+  };
+
+  return (
+    <Card 
+      ref={cardRef}
+      className="absolute w-80 h-[500px] overflow-hidden shadow-card hover:shadow-hover transition-all duration-300 cursor-grab active:cursor-grabbing select-none"
+      style={style}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* Main Image */}
+      <div className="relative h-3/4 overflow-hidden">
+        <Image 
+          src={profile.image} 
+          alt={profile.name}
+          fill
+          className="w-full h-full object-cover"
+        />
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        
+        {/* Distance Badge */}
+        <Badge className="absolute top-4 right-4 bg-white/90 text-primary border-0">
+          <MapPin className="w-3 h-3 mr-1" />
+          {profile.distance}km away
+        </Badge>
+        
+        {/* Name and Age */}
+        <div className="absolute bottom-4 left-4 text-white">
+          <h3 className="text-2xl font-bold">{profile.name}, {profile.age}</h3>
+        </div>
+      </div>
+      
+      {/* Profile Details */}
+      <div className="p-4 h-1/4 flex flex-col justify-between bg-white">
+        <p className="text-foreground/80 text-sm line-clamp-2">{profile.bio}</p>
+        
+        <div className="flex flex-wrap gap-2 mt-2">
+          {profile.job && (
+            <Badge variant="secondary" className="text-xs">
+              <Briefcase className="w-3 h-3 mr-1" />
+              {profile.job}
+            </Badge>
+          )}
+          {profile.education && (
+            <Badge variant="secondary" className="text-xs">
+              <GraduationCap className="w-3 h-3 mr-1" />
+              {profile.education}
+            </Badge>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};

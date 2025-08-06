@@ -1,21 +1,22 @@
 // import Link from "next/link";
 "use client";
-import Image from "next/image";
-import TinderButton from "@/src/components/ui/tinderbutton";
+import TinderButton from "@/components/ui/tinderbutton";
 import { useState } from "react";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import type { Provider } from "@supabase/supabase-js";
+import TinderLogo from "@/components/layout/TinderLogo";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
-
+  const supabase = createClient()
   const handleLoginWithGoogle = async () => {
     setLoading(true);
+    const redirectTo = `${window.location.origin}/home`;
+    console.log("Redirecting to:", redirectTo); // 👈 Log ra đường dẫn
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google" as Provider,
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/home`,
       },
     });
     if (error) {
@@ -29,12 +30,7 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-pink-600 via-pink-500 to-orange-500 flex flex-col justify-center items-center px-6 py-16 text-white font-sans">
       <>
         {/* Tinder Logo */}
-        <div className="mb-12 flex justify-center items-center w-full max-w-xs">
-          <Image src="/images/tinderlogo.png" alt="Logo" width={50} height={50} />
-          <h1 className="ml-4 text-4xl font-extrabold tracking-tight">
-            Tinder
-          </h1> 
-        </div>
+        <TinderLogo></TinderLogo>
         {/* Text info */}
         <p className="mb-10 max-w-md text-center text-base font-medium leading-relaxed">
           Khi nhấn Đăng nhập, bạn đồng ý với{" "}

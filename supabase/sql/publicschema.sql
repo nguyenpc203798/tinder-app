@@ -1,35 +1,19 @@
 CREATE TABLE public.user_profile (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
 
-  full_name TEXT,
+  name TEXT,
   age INTEGER CHECK (age IS NULL OR age >= 18),
   gender TEXT CHECK (gender IS NULL OR gender IN ('male', 'female', 'other')),
   bio TEXT,
-
   location TEXT,
-  latitude FLOAT,
-  longitude FLOAT,
-
   height_cm INTEGER,
   weight_kg INTEGER,
-  education_level TEXT,
+  education TEXT,
   job_title TEXT,
-  company TEXT,
-  income_range TEXT,
-
-  marital_status TEXT CHECK (
-    marital_status IS NULL OR marital_status IN ('single', 'divorced', 'widowed', 'married')
-  ),
-  children BOOLEAN,
-  religion TEXT,
-  zodiac_sign TEXT,
-  lifestyle TEXT,
-
-  interests TEXT[],
-  personality_traits TEXT[],
-  habits JSONB,
-
   photos TEXT[],
+  interests TEXT[],
+  age_range INTEGER[2],
+  distance INTEGER,
   is_verified BOOLEAN DEFAULT false,
   last_active TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW(),

@@ -1,44 +1,6 @@
 // Type định nghĩa từ cơ sở dữ liệu
 export type UserRole = 'customer' | 'admin';
 
-export type UserHabits = {
-  smoking?: 'never' | 'socially' | 'regularly';
-  drinking?: 'never' | 'socially' | 'regularly';
-  exercise?: 'never' | 'sometimes' | 'regularly' | 'daily';
-  diet?: 'omnivore' | 'vegetarian' | 'vegan' | 'other';
-  [key: string]: string | undefined;
-};
-
-export type UserProfile = {
-  id: string;
-  full_name?: string;
-  age?: number;
-  gender?: 'male' | 'female' | 'other';
-  bio?: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
-  height_cm?: number;
-  weight_kg?: number;
-  education_level?: string;
-  job_title?: string;
-  company?: string;
-  income_range?: string;
-  marital_status?: 'single' | 'divorced' | 'widowed' | 'married';
-  children?: boolean;
-  religion?: string;
-  zodiac_sign?: string;
-  lifestyle?: string;
-  interests?: string[];
-  personality_traits?: string[];
-  habits?: UserHabits;
-  photos?: string[];
-  is_verified: boolean;
-  last_active: string;
-  created_at: string;
-  updated_at: string;
-  role: UserRole;
-};
 
 export type UserPreferences = {
   id: string;

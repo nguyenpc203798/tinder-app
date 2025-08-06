@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { cn } from "@/src/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface TinderButtonProps {
   variant: "google" | "facebook" | "color" | "signup";
