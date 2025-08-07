@@ -14,60 +14,53 @@ import {
   Heart,
   Ruler,
   Dumbbell,
+  Plus,
+  X,
+  Loader2,
 } from "lucide-react";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/useProfile";
-import type { UserProfile } from "@/types/user";
+import { useProfileManager } from "@/hooks/useProfileManager";
+import type { ProfileFormData } from "@/types/profile";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 const ProfilePage = () => {
-  const { profile, setProfile, fetchProfile } = useProfile();
+  const {
+    profile,
+    loadingNormal,
+    loadingButton,
+    error,
+    fetchProfile,
+    updateProfile,
+    uploadPhotos,
+    deletePhoto,
+  } = useProfileManager();
+  
   const [showEditModal, setShowEditModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Thêm state cho xác nhận xóa ảnh
+  const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
 
-  const { toast } = useToast();
-
-  // Khi load trang, lấy dữ liệu profile thật từ Supabase
+  // Load profile data on component mount
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
-  const handleSaveProfile = async (updatedProfile: Partial<UserProfile>) => {
-    const supabase = createClient();
-    // Lấy user id hiện tại
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
-    if (!userId) {
-      toast({
-        title: "Update profile failed",
-        description: "Cannot identify user!",
-      });
-      return;
-    }
-    const upsertData = {
-      id: userId,
-      ...updatedProfile,
-      is_verified: true,
-    };
-    console.log("upsertData", upsertData);
-
-    const { error } = await supabase
-      .from("user_profile")
-      .upsert(upsertData);
-    if (error) {
-      toast({
-        title: "Update profile failed",
-        description: error.message,
-      });
-      console.log("error", error.message);
-    } else {
-      toast({
-        title: "Update profile successfully",
-      });
-      setProfile((prev: UserProfile) => ({ ...prev, ...updatedProfile }));
+  const handleSaveProfile = async (formData: ProfileFormData) => {
+    if (!formData) return false;
+    const success = await updateProfile(formData);
+    if (success) {
       setShowEditModal(false);
     }
+    return success;
   };
 
   const handleAddPhotoClick = () => {
@@ -78,49 +71,38 @@ const ProfilePage = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const supabase = createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
-    if (!userId) {
-      toast({ title: "Không xác định được user!" });
-      return;
-    }
-
-    const newPhotoUrls: string[] = [];
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    for (const file of Array.from(files)) {
-      if (!allowedTypes.includes(file.type)) {
-        toast({ title: "Chỉ cho phép ảnh jpg, jpeg, png, webp" });
-        continue;
-      }
-      if (file.size > maxSize) {
-        toast({ title: `Ảnh ${file.name} vượt quá 5MB!` });
-        continue;
-      }
-      const filePath = `${userId}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("user-photos")
-        .upload(filePath, file);
-      if (uploadError) {
-        console.log("uploadError", uploadError);
-        toast({ title: `Upload ảnh ${file.name} thất bại`, description: uploadError.message });
-        continue;
-      }
-      const { data: urlData } = supabase.storage
-        .from("user-photos")
-        .getPublicUrl(filePath);
-      if (urlData?.publicUrl) {
-        newPhotoUrls.push(urlData.publicUrl);
-      }
-    }
-
-    if (newPhotoUrls.length > 0) {
-      const newPhotos = [...profile.photos, ...newPhotoUrls].slice(0, 6);
-      await handleSaveProfile({ photos: newPhotos });
+    await uploadPhotos(files);
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
+
+  const handleDeletePhoto = async (photoUrl: string) => {
+    setPhotoToDelete(photoUrl);
+  };
+
+  // Show loading state while profile is being fetched
+  if (loadingNormal) {
+    return (
+      <div className="min-h-screen bg-gradient-bg flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Show error state if profile failed to load
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen bg-gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Failed to load profile</p>
+          <Button onClick={fetchProfile}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-bg">
@@ -133,6 +115,7 @@ const ProfilePage = () => {
           <Button
             onClick={() => setShowEditModal(true)}
             className="bg-gradient-primary hover:opacity-90"
+            disabled={loadingButton}
           >
             <Edit3 className="w-4 h-4 mr-2" />
             Edit
@@ -144,7 +127,7 @@ const ProfilePage = () => {
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4 text-primary">Photos</h2>
             <div className="grid grid-cols-3 gap-4">
-              {profile.photos.map((photo: string, index: number) => (
+              {profile.photos?.map((photo: string, index: number) => (
                 <div
                   key={index}
                   className="aspect-square rounded-lg overflow-hidden bg-muted relative group"
@@ -161,20 +144,26 @@ const ProfilePage = () => {
                       Main
                     </Badge>
                   )}
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleDeletePhoto(photo)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
-              ))}
+              )) || []}
 
               {/* Add Photo Placeholder */}
-              {profile.photos.length < 6 && (
+              {(profile.photos?.length || 0) < 6 && (
                 <>
                   <div
                     className="aspect-square rounded-lg border-2 border-dashed border-border/50 flex items-center justify-center text-muted-foreground hover:border-primary/50 transition-colors cursor-pointer"
                     onClick={handleAddPhotoClick}
                   >
                     <div className="text-center">
-                      <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-muted flex items-center justify-center">
-                        +
-                      </div>
+                      <Plus className="w-8 h-8 mx-auto mb-2" />
                       <p className="text-xs">Add Photo</p>
                     </div>
                   </div>
@@ -191,6 +180,31 @@ const ProfilePage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* AlertDialog xác nhận xóa ảnh */}
+        <AlertDialog open={!!photoToDelete} onOpenChange={open => { if (!open) setPhotoToDelete(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Bạn có chắc muốn xóa ảnh này?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Ảnh sẽ bị xóa vĩnh viễn khỏi hồ sơ và không thể khôi phục.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (photoToDelete) {
+                    await deletePhoto(photoToDelete);
+                    setPhotoToDelete(null);
+                  }
+                }}
+              >
+                Xóa
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Basic Info */}
         <Card className="mb-6 border-border/50 shadow-elegant">
@@ -242,7 +256,7 @@ const ProfilePage = () => {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {profile.interests.map((interest: string, index: number) => (
+              {profile.interests?.map((interest: string, index: number) => (
                 <Badge
                   key={index}
                   variant="secondary"
@@ -250,7 +264,7 @@ const ProfilePage = () => {
                 >
                   {interest}
                 </Badge>
-              ))}
+              )) || []}
             </div>
           </CardContent>
         </Card>
@@ -265,7 +279,7 @@ const ProfilePage = () => {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Age Range</span>
                 <span className="text-muted-foreground">
-                  {profile.age_range[0]} - {profile.age_range[1]}
+                  {profile.age_range?.[0]} - {profile.age_range?.[1]}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -284,14 +298,15 @@ const ProfilePage = () => {
       </main>
 
       {/* Edit Modal */}
-      <ProfileEditModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        profile={profile}
-        setProfile={setProfile}
-        fetchProfile={fetchProfile}
-        onSave={handleSaveProfile}
-      />
+      {profile && (
+        <ProfileEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          profile={profile}
+          loading={loadingButton}
+          onSave={handleSaveProfile}
+        />
+      )}
     </div>
   );
 };

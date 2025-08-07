@@ -1,68 +1,76 @@
 //src/components/pages/profile/ProfileEditModal.tsx
 import { useState, useEffect } from 'react';
-import type { UserProfile } from "@/types/user";
+import type { UserProfile, ProfileFormData } from "@/types/profile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ProfileValidator } from '@/untils/profileValidation';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   profile: UserProfile;
-  setProfile: (profile: UserProfile) => void;
-  fetchProfile: () => Promise<void>;
-  onSave: (profile: Partial<UserProfile>) => void;
+  loading?: boolean;
+  onSave: (profile: ProfileFormData) => Promise<boolean>;
 }
 
-export const ProfileEditModal = ({ isOpen, onClose, profile, onSave }: ProfileEditModalProps) => {
-  const [formData, setFormData] = useState({
-    name: profile.name,
-    gender: profile.gender,
-    age: profile.age,
-    bio: profile.bio,
-    job_title: profile.job_title,
-    education: profile.education,
-    location: profile.location,
-    interests: profile.interests,
-    height_cm: profile.height_cm,
-    weight_kg: profile.weight_kg,
-    age_range: profile.age_range,
-    distance: profile.distance,
+export const ProfileEditModal = ({ isOpen, onClose, profile, loading = false, onSave }: ProfileEditModalProps) => {
+  const [formData, setFormData] = useState<ProfileFormData>({
+    name: profile.name || '',
+    gender: profile.gender || '',
+    age: profile.age || 18,
+    bio: profile.bio || '',
+    job_title: profile.job_title || '',
+    education: profile.education || '',
+    location: profile.location || '',
+    interests: profile.interests || [],
+    height_cm: profile.height_cm || 170,
+    weight_kg: profile.weight_kg || 70,
+    age_range: profile.age_range || [18, 35],
+    distance: profile.distance || 50,
   });
 
+  const [newInterest, setNewInterest] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Update form data when profile changes
   useEffect(() => {
     setFormData({
-      name: profile.name,
-      gender: profile.gender,
-      age: profile.age,
-      bio: profile.bio,
-      job_title: profile.job_title,
-      education: profile.education,
-      location: profile.location,
-      interests: profile.interests,
-      height_cm: profile.height_cm,
-      weight_kg: profile.weight_kg,
-      age_range: profile.age_range,
-      distance: profile.distance,
+      name: profile.name || '',
+      gender: profile.gender || '',
+      age: profile.age || 18,
+      bio: profile.bio || '',
+      job_title: profile.job_title || '',
+      education: profile.education || '',
+      location: profile.location || '',
+      interests: profile.interests || [],
+      height_cm: profile.height_cm || 170,
+      weight_kg: profile.weight_kg || 70,
+      age_range: profile.age_range || [18, 35],
+      distance: profile.distance || 50,
     });
+    setValidationErrors({});
   }, [profile]);
 
-  const [newInterest, setNewInterest] = useState('');
-
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: keyof ProfileFormData, value: string | number | [number, number]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear validation error for this field
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({ ...prev, [field]: '' }));
+    }
   };
 
   const handleAddInterest = () => {
-    if (newInterest.trim() && !formData.interests.includes(newInterest.trim())) {
+    const trimmedInterest = newInterest.trim();
+    if (trimmedInterest && !formData.interests.includes(trimmedInterest)) {
       setFormData(prev => ({
         ...prev,
-        interests: [...prev.interests, newInterest.trim()]
+        interests: [...prev.interests, trimmedInterest]
       }));
       setNewInterest('');
     }
@@ -75,12 +83,19 @@ export const ProfileEditModal = ({ isOpen, onClose, profile, onSave }: ProfileEd
     }));
   };
 
-  const handleSave = () => {
-    onSave(formData);
+  const handleSave = async () => {
+    // Validate form data
+    const validation = ProfileValidator.validateProfile(formData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      return;
+    }
+    await onSave(formData);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleAddInterest();
     }
   };
@@ -270,9 +285,13 @@ export const ProfileEditModal = ({ isOpen, onClose, profile, onSave }: ProfileEd
           </Button>
           <Button 
             onClick={handleSave}
-            className="bg-gradient-primary hover:opacity-90"
+            className="bg-gradient-primary hover:opacity-90 flex items-center"
+            disabled={loading}
           >
-            Save Changes
+            {loading && (
+              <Loader2 className="animate-spin w-4 h-4 mr-2" />
+            )}
+            {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </DialogContent>
