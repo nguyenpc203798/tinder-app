@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -7,32 +7,13 @@ import { MessageCircle, User as UserIcon, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { useHeaderData } from '@/hooks/useHeaderData';
 
 export const Header = () => {
   const [showMessages, setShowMessages] = useState(false);
   const navigate = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [fallback, setFallback] = useState("U");
+  const { user, avatarUrl, fallback, handleLogout, photos } = useHeaderData();
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        setUser(data.user);
-        setAvatarUrl(data.user.user_metadata?.avatar_url || "");
-        setFallback(data.user.email?.[0]?.toUpperCase() || "U");
-      }
-    });
-  }, []);
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    navigate.push("/");
-  };
 
   return (
     <>
@@ -49,8 +30,10 @@ export const Header = () => {
         onClick={() => navigate.push('/profile')}
       >
         <Avatar className="w-8 h-8">
-          {avatarUrl ? (
-            <Image src={avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full" />
+          {photos && photos[0] ? (
+            <Image src={photos[0]} alt="Avatar" width={32} height={32} className="rounded-full object-cover" />
+          ) : avatarUrl ? (
+            <Image src={avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover" />
           ) : (
             <AvatarFallback>{user ? fallback : <UserIcon className="w-4 h-4" />}</AvatarFallback>
           )}

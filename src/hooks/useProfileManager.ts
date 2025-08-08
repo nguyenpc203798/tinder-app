@@ -1,7 +1,7 @@
 // Custom hook for profile management following Single Responsibility Principle
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import type { UserProfile, ProfileFormData } from '@/types/profile';
+import type { UserProfile, ProfileFormData} from '@/types/profile';
 
 interface UseProfileManagerReturn {
   profile: UserProfile | null;

@@ -1,11 +1,11 @@
 // API route for profile operations following REST principles
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClientForServer } from '@/lib/supabase/server';
 import { profileService } from '@/services/profileService';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await createClientForServer();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -36,7 +36,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createClientForServer();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

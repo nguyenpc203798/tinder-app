@@ -1,11 +1,11 @@
 // API route for photo operations
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClientForServer } from '@/lib/supabase/server';
 import { profileService } from '@/services/profileService';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createClientForServer();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     console.log('user', user);
     if (authError || !user) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createClientForServer();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

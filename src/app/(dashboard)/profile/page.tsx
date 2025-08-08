@@ -46,7 +46,7 @@ const ProfilePage = () => {
   
   const [showEditModal, setShowEditModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Thêm state cho xác nhận xóa ảnh
+  // state cho xác nhận xóa ảnh
   const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
 
   // Load profile data on component mount
@@ -97,7 +97,7 @@ const ProfilePage = () => {
     return (
       <div className="min-h-screen bg-gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">Failed to load profile</p>
+          <p className="text-red-500 mb-4">Profile loading failed</p>
           <Button onClick={fetchProfile}>Retry</Button>
         </div>
       </div>
@@ -185,13 +185,13 @@ const ProfilePage = () => {
         <AlertDialog open={!!photoToDelete} onOpenChange={open => { if (!open) setPhotoToDelete(null); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Bạn có chắc muốn xóa ảnh này?</AlertDialogTitle>
+              <AlertDialogTitle>Are you sure you want to delete this photo?</AlertDialogTitle>
               <AlertDialogDescription>
-                Ảnh sẽ bị xóa vĩnh viễn khỏi hồ sơ và không thể khôi phục.
+                The photo will be permanently deleted from your profile and cannot be recovered.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Hủy</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={async () => {
                   if (photoToDelete) {
@@ -200,7 +200,7 @@ const ProfilePage = () => {
                   }
                 }}
               >
-                Xóa
+                Delete
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

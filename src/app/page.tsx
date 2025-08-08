@@ -8,7 +8,7 @@ import TinderLogo from "@/components/layout/TinderLogo";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const supabase = createClient()
+  const supabase = createClient();
   const handleLoginWithGoogle = async () => {
     setLoading(true);
     const redirectTo = `${window.location.origin}/home`;
@@ -33,17 +33,17 @@ export default function Home() {
         <TinderLogo></TinderLogo>
         {/* Text info */}
         <p className="mb-10 max-w-md text-center text-base font-medium leading-relaxed">
-          Khi nhấn Đăng nhập, bạn đồng ý với{" "}
+          By clicking Log in, you agree to our{" "}
           <a href="#" className="underline font-semibold">
-            Điều khoản
+            Terms
+          </a>
+          . Learn how we process your data in our{" "}
+          <a href="#" className="underline font-semibold">
+            Privacy Policy
           </a>{" "}
-          của chúng tôi. Tìm hiểu về cách chúng tôi xử lý dữ liệu của bạn trong{" "}
+          and{" "}
           <a href="#" className="underline font-semibold">
-            Chính sách Quyền riêng tư
-          </a>{" "}
-          và{" "}
-          <a href="#" className="underline font-semibold">
-            Chính sách Cookie
+            Cookie Policy
           </a>
           .
         </p>
@@ -54,18 +54,23 @@ export default function Home() {
             onClick={handleLoginWithGoogle}
             disabled={loading}
           >
-            {loading ? "Đang đăng nhập..." : "Tiếp tục với Google"}
+            {loading ? "Logging in..." : "Continue with Google"}
           </TinderButton>
           <TinderButton variant="facebook" href="/">
-            Tiếp tục với Facebook
+            Continue with Facebook
           </TinderButton>
-          <TinderButton variant="signup" href="/auth/sign-up">
-            ĐĂNG KÝ
-          </TinderButton>
+          <div className="flex items-center justify-center">
+            <TinderButton className="mr-2" variant="base" href="/auth/sign-up">
+              Sign up
+            </TinderButton>
+            <TinderButton variant="base" href="/auth/login">
+              Login
+            </TinderButton>
+          </div>
         </div>
         {/* Problem text */}
         <p className="mt-12 font-bold text-lg cursor-pointer select-none hover:underline">
-          Bạn gặp sự cố khi đăng nhập?
+          Have an issue when logging in?
         </p>
       </>
     </main>
