@@ -5,15 +5,13 @@ import { SwipeCard } from '@/components/pages/home/SwipeCard';
 import { ActionButtons } from '@/components/pages/home/ActionButtons';
 import { MatchModal } from '@/components/pages/home/MatchModal';
 import { useToast } from '@/hooks/use-toast';
-import profile1 from '@/assets/profile1.jpg';
-import profile2 from '@/assets/profile2.jpg';
-import profile3 from '@/assets/profile3.jpg';
-import profile4 from '@/assets/profile4.jpg';
+import { useUserMatching } from '@/hooks/useUserMatching';
+import type { RankedUser } from '@/types/profile';
 import type { StaticImageData } from "next/image";
 import './home.css'
 
 interface Profile {
-  id: number;
+  id: string | number;
   name: string;
   age: number;
   image: string | StaticImageData;
@@ -22,88 +20,67 @@ interface Profile {
   job?: string;
   education?: string;
   location: string;
+  compatibilityScore?: number;
+  matchPercentage?: number;
+  reasons?: string[];
 }
 
-const sampleProfiles: Profile[] = [
-  {
-    id: 1,
-    name: "Emma",
-    age: 25,
-    image: profile1,
-    distance: 2,
-    bio: "Love hiking, good coffee, and spontaneous adventures. Looking for someone to explore the city with! 🌟",
-    job: "Marketing Manager",
-    education: "UC Berkeley",
-    location: "San Francisco"
-  },
-  {
-    id: 2,
-    name: "James",
-    age: 27,
-    image: profile2,
-    distance: 5,
-    bio: "Software engineer by day, chef by night. Let's cook something amazing together! 👨‍🍳",
-    job: "Software Engineer",
-    education: "Stanford",
-    location: "Palo Alto"
-  },
-  {
-    id: 3,
-    name: "Sophie",
-    age: 23,
-    image: profile3,
-    distance: 3,
-    bio: "Art student with a passion for photography and travel. Always looking for the next great shot! 📸",
-    job: "Art Student",
-    education: "RISD",
-    location: "San Francisco"
-  },
-  {
-    id: 4,
-    name: "Michael",
-    age: 26,
-    image: profile4,
-    distance: 7,
-    bio: "Fitness enthusiast and dog lover. Weekend warrior who enjoys rock climbing and beach volleyball 🏐",
-    job: "Personal Trainer",
-    education: "UCLA",
-    location: "Los Angeles"
-  }
-];
+const convertRankedUserToProfile = (rankedUser: RankedUser): Profile => {
+  return {
+    id: rankedUser.id || '',
+    name: rankedUser.name,
+    age: rankedUser.age,
+    image: rankedUser.photos?.[0] || '/default-avatar.png', // Sử dụng ảnh đầu tiên hoặc ảnh mặc định
+    distance: rankedUser.distance,
+    bio: rankedUser.bio,
+    job: rankedUser.job_title,
+    education: rankedUser.education,
+    location: rankedUser.location,
+    compatibilityScore: rankedUser.compatibilityScore,
+    matchPercentage: rankedUser.matchPercentage,
+    reasons: rankedUser.reasons,
+  };
+};
+
+
 
 const Index = () => {
-  const [profiles] = useState<Profile[]>(sampleProfiles);
+  const { rankedUsers, isLoading, error, fetchRankedUsers } = useUserMatching();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
   const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null);
   const { toast } = useToast();
 
+  // Chuyển đổi rankedUsers thành format cho component
+  const profiles = rankedUsers.map(convertRankedUserToProfile);
+  console.log("list profiles", profiles)
+
   const currentProfile = profiles[currentIndex];
   const nextProfile = profiles[currentIndex + 1];
 
-  const handleSwipe = (direction: 'left' | 'right', profileId: number) => {
+  const handleSwipe = (direction: 'left' | 'right', profileId: string | number) => {
     const profile = profiles.find(p => p.id === profileId);
-    
-    if (direction === 'right' && profile) {
-      // Simulate match probability (30% chance)
-      const isMatch = Math.random() < 0.3;
-      
-      if (isMatch) {
-        setMatchedProfile(profile);
-        setShowMatch(true);
-      } else {
-        toast({
-          title: "Like sent!",
-          description: `You liked ${profile.name}`,
-        });
-      }
-    } else if (direction === 'left' && profile) {
-      toast({
-        title: "Pass",
-        description: `You passed on ${profile.name}`,
-      });
-    }
-    
+
+    // if (direction === 'right' && profile) {
+    //   // Simulate match probability (30% chance)
+    //   const isMatch = Math.random() < 0.3;
+
+    //   if (isMatch) {
+    //     setMatchedProfile(profile);
+    //     setShowMatch(true);
+    //   } else {
+    //     toast({
+    //       title: "Like sent!",
+    //       description: `You liked ${profile.name} (${profile.matchPercentage}% match)`,
+    //     });
+    //   }
+    // } else if (direction === 'left' && profile) {
+    //   toast({
+    //     title: "Pass",
+    //     description: `You passed on ${profile.name}`,
+    //   });
+    // }
+
     // Move to next profile
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1);
@@ -112,7 +89,7 @@ const Index = () => {
 
   const handleAction = (action: 'pass' | 'like' | 'superlike' | 'rewind') => {
     if (!currentProfile) return;
-    
+
     switch (action) {
       case 'pass':
         handleSwipe('left', currentProfile.id);
@@ -152,6 +129,51 @@ const Index = () => {
     }
   }, [currentIndex, profiles.length, toast]);
 
+  // Conditional rendering để tránh vi phạm Rules of Hooks
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Đang tìm kiếm những người phù hợp với bạn...</p>
+          <p className="text-sm text-gray-500 mt-2">AI đang phân tích và xếp hạng các profile</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg text-red-600 mb-4">Có lỗi xảy ra: {error}</p>
+          <button
+            onClick={fetchRankedUsers}
+            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (profiles.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg text-gray-600 mb-4">Không tìm thấy người dùng phù hợp</p>
+          <button
+            onClick={fetchRankedUsers}
+            className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+          >
+            Tải lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-bg">
       <main className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -161,19 +183,19 @@ const Index = () => {
             <>
               {/* Next card (background) */}
               {nextProfile && (
-                <SwipeCard 
+                <SwipeCard
                   profile={nextProfile}
                   onSwipe={handleSwipe}
-                  style={{ 
+                  style={{
                     zIndex: 1,
                     transform: 'scale(0.95) translateY(10px)',
                     opacity: 0.7
                   }}
                 />
               )}
-              
+
               {/* Current card (foreground) */}
-              <SwipeCard 
+              <SwipeCard
                 profile={currentProfile}
                 onSwipe={handleSwipe}
                 style={{ zIndex: 2 }}
@@ -188,7 +210,7 @@ const Index = () => {
             </div>
           )}
         </div>
-        
+
         {/* Action Buttons */}
         {currentIndex < profiles.length && (
           <ActionButtons
@@ -199,7 +221,7 @@ const Index = () => {
           />
         )}
       </main>
-      
+
       {/* Match Modal */}
       <MatchModal
         isOpen={showMatch}

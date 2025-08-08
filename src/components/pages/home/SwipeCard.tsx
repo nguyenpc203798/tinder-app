@@ -6,7 +6,7 @@ import type { StaticImageData } from "next/image";
 import Image from "next/image";
 
 interface Profile {
-  id: number;
+  id: string | number;
   name: string;
   age: number;
   image: string | StaticImageData;
@@ -15,11 +15,14 @@ interface Profile {
   job?: string;
   education?: string;
   location: string;
+  compatibilityScore?: number;
+  matchPercentage?: number;
+  reasons?: string[];
 }
 
 interface SwipeCardProps {
   profile: Profile;
-  onSwipe: (direction: 'left' | 'right', profileId: number) => void;
+  onSwipe: (direction: 'left' | 'right', profileId: string | number) => void;
   style?: React.CSSProperties;
 }
 

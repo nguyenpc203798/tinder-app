@@ -49,6 +49,26 @@ export interface ProfileValidationResult {
 }
 
 // Constants for validation and UI
+// AI Compatibility types
+export interface CompatibilityResult {
+  userId: string;
+  score: number;
+  reasons: string[];
+  matchPercentage: number;
+}
+
+export interface RankedUser extends UserProfile {
+  compatibilityScore: number;
+  matchPercentage: number;
+  reasons: string[];
+}
+
+export interface UserMatchingData {
+  currentUser: UserProfile;
+  candidateUsers: UserProfile[];
+  rankedUsers: RankedUser[];
+}
+
 export const PROFILE_CONSTANTS = {
   MAX_INTERESTS: 10,
   MIN_AGE: 18,

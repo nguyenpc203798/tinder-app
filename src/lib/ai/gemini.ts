@@ -1,4 +1,4 @@
-import { CompatibilityResult, UserProfile } from "@/src/types";
+import { CompatibilityResult, UserProfile } from "@/types/profile";
 
 // Hàm gọi Gemini API để phân tích tương thích giữa users
 export async function generateCompatibilityScores(
@@ -54,9 +54,10 @@ export async function generateCompatibilityScores(
     
     // Fallback: Tạo điểm số ngẫu nhiên nếu API lỗi
     return candidateUsers.map((user) => ({
-      user_id: user.id,
+      userId: user.id || '',
       score: Math.floor(Math.random() * 100),
-      reason: "Generated fallback score due to API error",
+      reasons: ["Generated fallback score due to API error"],
+      matchPercentage: Math.floor(Math.random() * 100),
     }));
   }
 }
@@ -75,13 +76,14 @@ function generateBatchCompatibilityPrompt(
   - Giới tính: ${currentUser.gender || "Không có thông tin"}
   - Vị trí: ${currentUser.location || "Không có thông tin"}
   - Sở thích: ${currentUser.interests?.join(", ") || "Không có thông tin"}
-  - Tính cách: ${currentUser.personality_traits?.join(", ") || "Không có thông tin"}
-  - Học vấn: ${currentUser.education_level || "Không có thông tin"}
+  - Học vấn: ${currentUser.education || "Không có thông tin"}
   - Nghề nghiệp: ${currentUser.job_title || "Không có thông tin"}
-  - Tôn giáo: ${currentUser.religion || "Không có thông tin"}
-  - Lối sống: ${currentUser.lifestyle || "Không có thông tin"}
-  - Thói quen: ${JSON.stringify(currentUser.habits || {})}
-  
+  - Chiều cao (cm): ${currentUser.height_cm || "Không có thông tin"}
+  - Cân nặng (kg): ${currentUser.weight_kg || "Không có thông tin"}
+  - Khoảng tuổi mong muốn: ${currentUser.age_range ? `${currentUser.age_range[0]}-${currentUser.age_range[1]}` : "Không có thông tin"}
+  - Khoảng cách tối đa (km): ${currentUser.distance || "Không có thông tin"}
+  - Đã xác thực: ${typeof currentUser.is_verified === "boolean" ? (currentUser.is_verified ? "Có" : "Không") : "Không có thông tin"}
+
   ${candidateUsers.length} Ứng viên:
   ${candidateUsers
     .map(
@@ -92,11 +94,13 @@ function generateBatchCompatibilityPrompt(
   - Giới tính: ${user.gender || "Không có thông tin"}
   - Vị trí: ${user.location || "Không có thông tin"}
   - Sở thích: ${user.interests?.join(", ") || "Không có thông tin"}
-  - Tính cách: ${user.personality_traits?.join(", ") || "Không có thông tin"}
-  - Học vấn: ${user.education_level || "Không có thông tin"}
+  - Học vấn: ${user.education || "Không có thông tin"}
   - Nghề nghiệp: ${user.job_title || "Không có thông tin"}
-  - Tôn giáo: ${user.religion || "Không có thông tin"}
-  - Lối sống: ${user.lifestyle || "Không có thông tin"}
+  - Chiều cao (cm): ${user.height_cm || "Không có thông tin"}
+  - Cân nặng (kg): ${user.weight_kg || "Không có thông tin"}
+  - Khoảng tuổi mong muốn: ${user.age_range ? `${user.age_range[0]}-${user.age_range[1]}` : "Không có thông tin"}
+  - Khoảng cách tối đa (km): ${user.distance || "Không có thông tin"}
+  - Đã xác thực: ${typeof user.is_verified === "boolean" ? (user.is_verified ? "Có" : "Không") : "Không có thông tin"}
   `
     )
     .join("\n")}
@@ -111,8 +115,18 @@ function generateBatchCompatibilityPrompt(
   
   Trả về JSON array với format:
   [
-    {"user_id": "uuid", "score": 85, "reason": "High location proximity + 60% interest overlap"},
-    {"user_id": "uuid", "score": 72, "reason": "Good lifestyle match + similar education"},
+    {
+      "userId": "uuid", 
+      "score": 85, 
+      "reasons": ["High location proximity", "60% interest overlap", "Similar lifestyle"], 
+      "matchPercentage": 85
+    },
+    {
+      "userId": "uuid", 
+      "score": 72, 
+      "reasons": ["Good lifestyle match", "Similar education level"], 
+      "matchPercentage": 72
+    },
     ...
   ]
   
