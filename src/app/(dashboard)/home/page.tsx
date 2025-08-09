@@ -50,7 +50,6 @@ const Index = () => {
 
   // Chuyển đổi rankedUsers thành format cho component
   const profiles = rankedUsers.map(convertRankedUserToProfile);
-  // console.log("list profiles", profiles)
 
   const currentProfile = profiles[currentIndex];
 
@@ -61,19 +60,16 @@ const Index = () => {
     profileId: string | number
   ) => {
     const profile = profiles.find((p) => p.id === profileId);
-    console.log("direction", direction);
-    console.log("profileId", profileId);
     if (profile) {
       toast({
         title: "Pass",
         description: `You passed on ${profile.name}`,
       });
     }
-    console.log("currentIndexsd", currentIndex);
     // Chuyển sang profile tiếp theo
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1);
-    }, 100);
+    }, 50);
   };
 
   const handleAction = (action: "pass" | "like" | "superlike" | "rewind") => {
@@ -182,7 +178,12 @@ const Index = () => {
                   key={nextProfile.id}
                   profile={nextProfile}
                   onSwipe={(dir, id) => handleSwipe(dir, id)}
-                  style={{ zIndex: 1 }}
+                  style={{
+                    zIndex: 1,
+                    transform: 'scale(0.95) translateY(10px)',
+                    opacity: 0.7,
+                    transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)'
+                  }}
                 />
               )}
 
@@ -191,7 +192,7 @@ const Index = () => {
                 key={currentProfile.id}
                 profile={currentProfile}
                 onSwipe={(dir, id) => handleSwipe(dir, id)}
-                style={{ zIndex: 2 }}
+                style={{ zIndex: 2, transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)' }}
               />
             </>
           ) : (

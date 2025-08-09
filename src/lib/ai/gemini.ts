@@ -1,57 +1,87 @@
 import { CompatibilityResult, UserProfile } from "@/types/profile";
 
 // Hàm gọi Gemini API để phân tích tương thích giữa users
+// Hàm chia mảng thành các batch nhỏ
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
+}
+
 export async function generateCompatibilityScores(
   currentUser: UserProfile,
   candidateUsers: UserProfile[]
 ): Promise<CompatibilityResult[]> {
   try {
-    const prompt = generateBatchCompatibilityPrompt(currentUser, candidateUsers);
-    
-    const response = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY || "",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 8192,
-        },
-      }),
-    });
+    const batchSize = 2;
+    const batches = chunkArray(candidateUsers, batchSize);
+    let allResults: CompatibilityResult[] = [];
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error("Gemini API error:", data);
-      throw new Error("Failed to generate compatibility scores");
+    for (const batch of batches) {
+      const prompt = generateBatchCompatibilityPrompt(currentUser, batch);
+      // DEBUG: Log ra GEMINI_API_KEY
+      console.log("prompt", prompt)
+
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY || "",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.2,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+          },
+        }),
+      });
+
+      const data = await response.json();
+      console.log("datagemini", data)
+      if (!response.ok) {
+        console.error("Gemini API error:", data);
+        throw new Error("Failed to generate compatibility scores");
+      }
+      // Đảm bảo có candidates và text
+      if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+        console.error("Gemini API response format unexpected:", JSON.stringify(data));
+        continue;
+      }
+      const text = data.candidates[0].content.parts[0].text;
+      // Parse JSON từ response text
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      if (jsonStart === -1 || jsonEnd === 0) {
+        console.error("Không tìm thấy JSON array trong Gemini response:", text);
+        continue;
+      }
+      const jsonStr = text.substring(jsonStart, jsonEnd);
+      let results: CompatibilityResult[] = [];
+      try {
+        results = JSON.parse(jsonStr) as CompatibilityResult[];
+      } catch (e) {
+        console.error("Lỗi parse JSON từ Gemini:", e, jsonStr);
+        continue;
+      }
+      allResults = allResults.concat(results);
+      console.log("allResults", allResults)
     }
-    
-    const text = data.candidates[0].content.parts[0].text;
-    
-    // Parse JSON từ response text
-    const jsonStart = text.indexOf('[');
-    const jsonEnd = text.lastIndexOf(']') + 1;
-    const jsonStr = text.substring(jsonStart, jsonEnd);
-    
-    const results = JSON.parse(jsonStr) as CompatibilityResult[];
-    return results;
+    return allResults;
   } catch (error) {
     console.error("Error generating compatibility scores:", error);
-    
     // Fallback: Tạo điểm số ngẫu nhiên nếu API lỗi
     return candidateUsers.map((user) => ({
       userId: user.id || '',

@@ -5,6 +5,7 @@ import { MapPin, Briefcase, GraduationCap } from "lucide-react";
 import type { StaticImageData } from "next/image";
 import Image from "next/image";
 
+
 interface Profile {
   id: string | number;
   name: string;
@@ -31,7 +32,6 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
 
-  console.log("isInitialized", false);
   // Reset card state khi profile thay đổi để tránh lỗi chỉ vuốt được 2 card
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -83,21 +83,6 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
       cardRef.current.classList.add(animationClass);
 
       setTimeout(() => {
-        // Chỉ remove animation class và gọi onSwipe, không reset style để tránh nháy
-        // if (cardRef.current) {
-        //   cardRef.current.classList.remove(animationClass);
-
-        // }
-        if (cardRef.current) {
-          cardRef.current.style.transition = "none";
-          cardRef.current.style.transform = "translate(0px, 0px) rotate(0deg)";
-          cardRef.current.style.opacity = "1";
-          cardRef.current.classList.remove(
-            "animate-swipe-left",
-            "animate-swipe-right"
-          );
-        }
-
         onSwipe(direction, profile.id);
       }, 1000);
     } else {
