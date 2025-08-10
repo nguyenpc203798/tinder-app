@@ -6,53 +6,26 @@ import { ActionButtons } from "@/components/pages/home/ActionButtons";
 // import { MatchModal } from '@/components/pages/home/MatchModal';
 import { useToast } from "@/hooks/use-toast";
 import { useUserMatching } from "@/hooks/useUserMatching";
+import { useHeaderData } from "@/hooks/useHeaderData";
 import type { RankedUser } from "@/types/profile";
 import type { StaticImageData } from "next/image";
 import "./home.css";
-
-interface Profile {
-  id: string | number;
-  name: string;
-  age: number;
-  image: string | StaticImageData;
-  distance: number;
-  bio: string;
-  job?: string;
-  education?: string;
-  location: string;
-  compatibilityScore?: number;
-  matchPercentage?: number;
-  reasons?: string[];
-}
-
-const convertRankedUserToProfile = (rankedUser: RankedUser): Profile => {
-  return {
-    id: rankedUser.id || "",
-    name: rankedUser.name,
-    age: rankedUser.age,
-    image: rankedUser.photos?.[0] || "/default-avatar.png", // Sử dụng ảnh đầu tiên hoặc ảnh mặc định
-    distance: rankedUser.distance,
-    bio: rankedUser.bio,
-    job: rankedUser.job_title,
-    education: rankedUser.education,
-    location: rankedUser.location,
-    compatibilityScore: rankedUser.compatibilityScore,
-    matchPercentage: rankedUser.matchPercentage,
-    reasons: rankedUser.reasons,
-  };
-};
 
 const Index = () => {
   const { rankedUsers, isLoading, error, fetchRankedUsers } = useUserMatching();
   const [currentIndex, setCurrentIndex] = useState(0);
   // const [showMatch, setShowMatch] = useState(false);
   const { toast } = useToast();
+  const { avatarUrl } = useHeaderData();
 
-  // Chuyển đổi rankedUsers thành format cho component
-  const profiles = rankedUsers.map(convertRankedUserToProfile);
+  // profiles là RankedUser[], chỉ format image cho UI
+  const profiles = rankedUsers.map((user) => ({
+    ...user,
+    id: user.id || "", // Đảm bảo id luôn là string
+    image: user.photos?.[0] || avatarUrl || "/default-avatar.png",
+  }));
 
   const currentProfile = profiles[currentIndex];
-
   const nextProfile = profiles[currentIndex + 1];
 
   const handleSwipe = (

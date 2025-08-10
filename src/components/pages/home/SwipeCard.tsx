@@ -4,25 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Briefcase, GraduationCap } from "lucide-react";
 import type { StaticImageData } from "next/image";
 import Image from "next/image";
+import type { UserProfile } from "@/types/profile";
 
-
-interface Profile {
-  id: string | number;
-  name: string;
-  age: number;
-  image: string | StaticImageData;
-  distance: number;
-  bio: string;
-  job?: string;
-  education?: string;
-  location: string;
-  compatibilityScore?: number;
-  matchPercentage?: number;
-  reasons?: string[];
-}
 
 interface SwipeCardProps {
-  profile: Profile;
+  profile: UserProfile & { image: string | StaticImageData };
   onSwipe: (direction: "left" | "right", profileId: string | number) => void;
   style?: React.CSSProperties;
 }
@@ -83,10 +69,61 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
       cardRef.current.classList.add(animationClass);
 
       setTimeout(() => {
-        onSwipe(direction, profile.id);
+        onSwipe(direction, profile.id || "");
       }, 1000);
     } else {
       // Snap back
+      cardRef.current.style.transform = "translate(0px, 0px) rotate(0deg)";
+      cardRef.current.style.opacity = "1";
+    }
+  };
+
+  // Touch event handlers cho mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    if (cardRef.current) {
+      cardRef.current.style.transition = "all 0.5s";
+    }
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (rect) {
+      const touch = e.touches[0];
+      setDragOffset({
+        x: touch.clientX - rect.left - rect.width / 2,
+        y: touch.clientY - rect.top - rect.height / 2,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - centerX - dragOffset.x;
+    const deltaY = touch.clientY - centerY - dragOffset.y;
+    const rotation = Math.min(Math.max(deltaX / 10, -15), 15);
+    cardRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
+    const opacity = Math.max(0, 1 - Math.abs(deltaX) / 150);
+    cardRef.current.style.opacity = opacity.toString();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging || !cardRef.current) return;
+    setIsDragging(false);
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - centerX - dragOffset.x;
+    if (Math.abs(deltaX) > 100) {
+      const direction = deltaX > 0 ? "right" : "left";
+      const animationClass =
+        direction === "left" ? "animate-swipe-left" : "animate-swipe-right";
+      cardRef.current.classList.add(animationClass);
+      setTimeout(() => {
+        onSwipe(direction, profile.id || "");
+      }, 1000);
+    } else {
       cardRef.current.style.transform = "translate(0px, 0px) rotate(0deg)";
       cardRef.current.style.opacity = "1";
     }
@@ -101,6 +138,9 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Main Image */}
       <div className="relative h-3/4 overflow-hidden">
@@ -133,16 +173,16 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
         <p className="text-foreground/80 text-sm line-clamp-2">{profile.bio}</p>
 
         <div className="flex flex-wrap gap-2 mt-2">
-          {profile.job && (
+          {profile.job_title && (
             <Badge variant="secondary" className="text-xs">
               <Briefcase className="w-3 h-3 mr-1" />
-              {profile.job}
+              {profile.job_title}
             </Badge>
           )}
-          {profile.education && (
+          {profile.location && (
             <Badge variant="secondary" className="text-xs">
-              <GraduationCap className="w-3 h-3 mr-1" />
-              {profile.education}
+              <MapPin className="w-3 h-3 mr-1" />
+              {profile.location}
             </Badge>
           )}
         </div>
