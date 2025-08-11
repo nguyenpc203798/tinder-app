@@ -22,7 +22,7 @@ export async function generateCompatibilityScores(
     for (const batch of batches) {
       const prompt = generateBatchCompatibilityPrompt(currentUser, batch);
       // DEBUG: Log ra GEMINI_API_KEY
-      console.log("prompt", prompt)
+      // console.log("prompt", prompt)
 
       const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
         method: "POST",
@@ -77,7 +77,7 @@ export async function generateCompatibilityScores(
         continue;
       }
       allResults = allResults.concat(results);
-      console.log("allResults", allResults)
+      // console.log("allResults", allResults)
     }
     return allResults;
   } catch (error) {

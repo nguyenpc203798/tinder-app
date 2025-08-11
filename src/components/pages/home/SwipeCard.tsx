@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Briefcase, GraduationCap } from "lucide-react";
+import { MapPin, Briefcase } from "lucide-react";
 import type { StaticImageData } from "next/image";
 import Image from "next/image";
 import type { UserProfile } from "@/types/profile";
