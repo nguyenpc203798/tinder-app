@@ -1,6 +1,6 @@
 # 💕 AI Matching System
 
-> **Ứng dụng hẹn hò thông minh sử dụng AI để ghép đôi người dùng dựa trên độ tương thích và vị trí địa lý**
+> **Smart dating application using AI to match users based on compatibility and geographical location**
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js" alt="Next.js" />
@@ -10,19 +10,19 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css" alt="Tailwind CSS" />
 </p>
 
-## 🚀 Giới Thiệu Dự Án
+## 🚀 Project Overview
 
-**AI Matching System** là ứng dụng hẹn hò hiện đại sử dụng trí tuệ nhân tạo để tìm kiếm người phù hợp. Khác với các ứng dụng hẹn hò truyền thống, hệ thống của chúng tôi:
+**AI Matching System** is a modern dating application that uses artificial intelligence to find compatible matches. Unlike traditional dating apps, our system features:
 
-- 🤖 **AI-Powered Matching**: Sử dụng Gemini AI để phân tích độ tương thích
-- 📍 **Location-Based Priority**: Ưu tiên người dùng cùng khu vực địa lý  
-- 🎯 **Smart Ranking**: Xếp hạng 50 ứng viên tốt nhất thay vì random
-- ⚡ **Real-time Notifications**: Thông báo tức thời khi có match mới
-- 🔐 **Secure Authentication**: Đăng nhập an toàn với email và Google
+- 🤖 **AI-Powered Matching**: Uses Gemini AI to analyze compatibility
+- 📍 **Location-Based Priority**: Prioritizes users in the same geographical area  
+- 🎯 **Smart Ranking**: Ranks top 50 candidates instead of random selection
+- ⚡ **Real-time Notifications**: Instant notifications for new matches
+- 🔐 **Secure Authentication**: Safe login with email and Google
 
-## 🛠️ Công Nghệ Sử Dụng
+## 🛠️ Tech Stack
 
-| Công nghệ | Mục đích | Version |
+| Technology | Purpose | Version |
 |-----------|----------|---------|
 | **Next.js** | Frontend Framework | 14.x |
 | **TypeScript** | Type Safety | 5.x |
@@ -31,19 +31,19 @@
 | **Tailwind CSS** | UI Styling | 3.x |
 | **Lucide React** | Icons | Latest |
 
-## ✨ Tính Năng Hiện Tại
+## ✨ Current Features
 
-### ✅ **Đã Hoàn Thành**
+### ✅ **Completed**
 - 🔐 **Authentication System**
-  - Đăng ký/Đăng nhập bằng Email
-  - Đăng nhập bằng Google OAuth
-  - Reset password qua email
+  - Email registration/login
+  - Google OAuth login
+  - Email password reset
   - Protected routes & middleware
 
 - 👤 **Profile Management**  
-  - Tạo và chỉnh sửa profile đầy đủ
-  - Upload multiple photos
-  - Cài đặt preferences (tuổi, khoảng cách, sở thích)
+  - Complete profile creation and editing
+  - Multiple photo uploads
+  - Preference settings (age, distance, interests)
   - Location-based settings
 
 - 🤖 **AI Matching Engine**
@@ -53,17 +53,17 @@
   - Dynamic re-ranking system
 
 - 💕 **Matching Interface**
-  - Card-based UI giống Tinder
+  - Tinder-like card UI
   - Like/Pass actions
   - Match detection & notifications
   - Priority-based user queue
 
 - 🔔 **Real-time Notifications**
-  - Push notifications khi có người like
+  - Push notifications for likes
   - Instant match notifications
   - Activity status updates
 
-### 🚧 **Đang Phát Triển**
+### 🚧 **In Development**
 - 💬 **Chat System** (Coming Soon)
   - Real-time messaging
   - Media sharing (photos, voice notes)
@@ -82,28 +82,28 @@
   - Advanced filters
   - Read receipts
 
-## 📦 Cài Đặt và Chạy Dự Án
+## 📦 Installation and Setup
 
-### **Bước 1: Clone Repository**
+### **Step 1: Clone Repository**
 ```bash
 git clone https://github.com/nguyenpc203798/tinder-app.git
 cd tinder-app
 ```
 
-### **Bước 2: Cài Đặt Dependencies**
+### **Step 2: Install Dependencies**
 ```bash
-# Sử dụng npm
+# Using npm
 npm install
 
-# Hoặc sử dụng yarn
+# Or using yarn
 yarn install
 
-# Hoặc sử dụng pnpm
+# Or using pnpm
 pnpm install
 ```
 
-### **Bước 3: Cấu Hình Environment Variables**
-Tạo file `.env.local` trong thư mục root:
+### **Step 3: Configure Environment Variables**
+Create a `.env.local` file in the root directory:
 
 ```bash
 # Supabase Configuration
@@ -113,21 +113,20 @@ SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 # Gemini AI Configuration  
 GEMINI_API_KEY=AIzaSyCHAhfVuNStd8RokFFJ3mkCEOhUioGD73E
-
 ```
 
-### **Bước 4: Chạy Development Server**
+### **Step 4: Run Development Server**
 ```bash
 npm run dev
-# hoặc
+# or
 yarn dev  
-# hoặc
+# or
 pnpm dev
 ```
 
-Mở [http://localhost:3000](http://localhost:3000) để xem ứng dụng.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## 🗂️ Cấu Trúc Thư Mục
+## 🗂️ Project Structure
 
 ```
 ai-matching-system/
@@ -164,43 +163,44 @@ ai-matching-system/
 └── 📄 README.md
 ```
 
-## 🔧 Scripts Có Sẵn
+## 🔧 Available Scripts
 
 ```bash
 # Development
-npm run dev          # Chạy development server
-npm run build        # Build production
-npm run start        # Chạy production server
-npm run lint         # Chạy ESLint
-npm run type-check   # Kiểm tra TypeScript
+npm run dev          # Run development server
+npm run build        # Build for production
+npm run start        # Run production server
+npm run lint         # Run ESLint
+npm run type-check   # TypeScript type checking
+```
 
 ## 📊 Database Schema
 
-### **Bảng Chính:**
-- `user_profile` - Thông tin người dùng chi tiết
-- `matches` - Các cặp đôi đã match
-- `likes` - Lưu trữ dữ liệu like
-- `notificatons` - Lưu trữ thông báo khi có like, match và thông báo
-- `messages` - Tin nhắn chat (coming soon)
+### **Main Tables:**
+- `user_profile` - Detailed user information
+- `matches` - Matched pairs
+- `likes` - Like data storage
+- `notifications` - Notifications for likes, matches, and alerts
+- `messages` - Chat messages (coming soon)
 
 ## 🤖 AI Matching Algorithm
 
-### **Quy Trình Matching:**
+### **Matching Process:**
 
 1. **User Selection** (50 users max)
-   - Ưu tiên cùng location (30 users)
+   - Prioritize same location (30 users)
    - Distance-based selection (20 users)
-   - Random fallback nếu thiếu
+   - Random fallback if insufficient
 
 2. **AI Compatibility Scoring**
    ```javascript
    const scoringCriteria = {
-     location_bonus: 30%,      // Cùng khu vực
-     interest_overlap: 25%,    // Sở thích chung  
-     age_compatibility: 15%,   // Độ tuổi phù hợp
-     lifestyle_match: 15%,     // Lối sống tương đồng
-     education_level: 10%,     // Trình độ học vấn
-     personality_traits: 5%    // Tính cách
+     location_bonus: 30%,      // Same area
+     interest_overlap: 25%,    // Common interests  
+     age_compatibility: 15%,   // Age compatibility
+     lifestyle_match: 15%,     // Similar lifestyle
+     education_level: 10%,     // Education level
+     personality_traits: 5%    # Personality traits
    }
    ```
 
@@ -208,7 +208,7 @@ npm run type-check   # Kiểm tra TypeScript
 
 ### **Vercel (Recommended)**
 ```bash
-# Cài đặt Vercel CLI
+# Install Vercel CLI
 npm install -g vercel
 
 # Deploy
@@ -217,16 +217,15 @@ vercel
 # Set environment variables
 vercel env add NEXT_PUBLIC_SUPABASE_URL
 vercel env add GEMINI_API_KEY
-# ... thêm tất cả env vars
+# ... add all env vars
 ```
-
 
 ### **Coding Standards:**
 - ✅ TypeScript strict mode
 - ✅ ESLint + Prettier formatting
 - ✅ Component-driven development
 - ✅ Mobile-first responsive design
-- ✅ Comments bằng tiếng Việt
+- ✅ Comprehensive documentation
 
 ## 📝 Changelog
 
@@ -247,7 +246,7 @@ vercel env add GEMINI_API_KEY
 - 🎁 Premium features
 - 🌍 Multi-language support
 
-## 📞 Hỗ Trợ
+## 📞 Support
 
 - 📧 **Email**: nguyenpc203@gmail.com
 
