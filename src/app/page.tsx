@@ -11,12 +11,12 @@ export default function Home() {
   const supabase = createClient();
   const handleLoginWithGoogle = async () => {
     setLoading(true);
-    const redirectTo = `${window.location.origin}/home`;
-    console.log("Redirecting to:", redirectTo); // 👈 Log ra đường dẫn
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    console.log("Redirecting to auth callback:", redirectTo);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google" as Provider,
       options: {
-        redirectTo: `${window.location.origin}/home`,
+        redirectTo,
       },
     });
     if (error) {
