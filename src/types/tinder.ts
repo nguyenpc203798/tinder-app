@@ -80,6 +80,7 @@ export interface IMatchService {
   getMatches(): Promise<MatchWithProfiles[]>;
   getMatchById(matchId: string): Promise<MatchWithProfiles | null>;
   checkMatch(userId1: string, userId2: string): Promise<Match | null>;
+  getMatchedUserIds(): Promise<string[]>;
 }
 
 export interface INotificationService {
@@ -118,18 +119,21 @@ export interface UseMatchReturn {
   refreshMatches: () => Promise<void>;
   getMatchById: (matchId: string) => MatchWithProfiles | null;
   handleNewMatch: (match: MatchWithProfiles) => void;
+  getMatchedUserIds: () => Promise<string[]>;
 }
 
-export interface UseNotificationReturn {
+export type UseNotificationReturn = {
   notifications: NotificationWithProfile[];
   unreadCount: number;
   isLoading: boolean;
   error: string | null;
-  markAsRead: (notificationId: string) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
-  refreshNotifications: () => Promise<void>;
+  subscribeToNotifications: () => () => void;
   handleNewNotification: (notification: NotificationWithProfile) => void;
-}
+  getNotificationMessage: (notification: NotificationWithProfile) => string;
+  handleNotificationClick: (notification: NotificationWithProfile) => Promise<void>;
+};
 
 export interface UseMessageReturn {
   messages: Message[];

@@ -50,7 +50,7 @@ export async function generateCompatibilityScores(
       });
 
       const data = await response.json();
-      console.log("datagemini", data)
+      // console.log("datagemini", data)
       if (!response.ok) {
         console.error("Gemini API error:", data);
         throw new Error("Failed to generate compatibility scores");

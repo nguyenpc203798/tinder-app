@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MessagesModal } from './MessagesModal';
+import { NotificationDropdown } from './NotificationDropdown';
 import { MessageCircle, User as UserIcon, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -51,8 +52,12 @@ export const Header = () => {
           </h1>
         </div>
       </Link>
-      {/* Right - Messages and Settings */}
+      {/* Right - Notifications, Messages and Settings */}
       <div className="flex items-center gap-2">
+        {/* Notification Bell */}
+        <NotificationDropdown />
+        
+        {/* Messages */}
         <Button 
           variant="ghost" 
           size="icon" 
@@ -64,6 +69,8 @@ export const Header = () => {
             3
           </Badge>
         </Button>
+        
+        {/* Logout */}
         <Button variant="ghost" size="icon" className="rounded-full" onClick={handleLogout} title="Đăng xuất">
           <LogOut className="w-5 h-5" />
         </Button>

@@ -7,29 +7,65 @@ export class NotificationService implements INotificationService {
     const supabase = await createClientForServer();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
+    
+    // Lấy notifications đơn giản, không join
     const { data, error } = await supabase
       .from('notifications')
-      .select(`*, from_profile:user_profile!notifications_data_from_fkey(id, name, image, age)`)
+      .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
+    
     if (error) throw new Error(`Failed to get notifications: ${error.message}`);
+    
+    // Manually fetch profile data cho từng notification
     const notificationsWithProfiles = await Promise.all(
       (data || []).map(async (notification: Notification) => {
         let fromProfile = null;
-        if (notification.data?.from) {
-          const { data: profile } = await supabase
-            .from('user_profile')
-            .select('id, name, image, age')
-            .eq('id', notification.data.from)
-            .single();
-          fromProfile = profile;
+        
+        // Kiểm tra data.from trong JSONB (theo cấu trúc hiện tại)
+        // Đối với type "match", có thể có cấu trúc data khác
+        let fromUserId = notification.data?.from;
+        
+        // Nếu không có data.from, thử các trường khác cho type match
+        if (!fromUserId && notification.type === 'match') {
+          // Có thể data chứa match_id hoặc with field
+          fromUserId = notification.data?.with;
         }
+        
+        if (fromUserId) {
+          console.log(`Fetching profile for user: ${fromUserId} (notification type: ${notification.type})`);
+          const { data: profile, error: profileError } = await supabase
+            .from('user_profile')
+            .select('id, name, photos, age')
+            .eq('id', fromUserId)
+            .single();
+          
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+          }
+          
+          if (profile) {
+            fromProfile = {
+              id: profile.id,
+              name: profile.name,
+              image: profile.photos?.[0] || '/default-avatar.png',
+              age: profile.age
+            };
+            console.log(`Profile found: ${profile.name}`);
+          } else {
+            console.log(`No profile found for user: ${fromUserId}`);
+          }
+        } else {
+          console.log(`No from user ID found in notification data:`, notification.data);
+        }
+        
         return {
           ...notification,
           from_profile: fromProfile
         } as NotificationWithProfile;
       })
     );
+    
     return notificationsWithProfiles;
   }
 

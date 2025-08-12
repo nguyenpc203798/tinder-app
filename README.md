@@ -1,105 +1,260 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# 💕 AI Matching System
+
+> **Ứng dụng hẹn hò thông minh sử dụng AI để ghép đôi người dùng dựa trên độ tương thích và vị trí địa lý**
 
 <p align="center">
- The fastest way to build apps with Next.js and Supabase
+  <img src="https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Supabase-green?style=flat&logo=supabase" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Gemini_AI-orange?style=flat&logo=google" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css" alt="Tailwind CSS" />
 </p>
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+## 🚀 Giới Thiệu Dự Án
 
-## Features
+**AI Matching System** là ứng dụng hẹn hò hiện đại sử dụng trí tuệ nhân tạo để tìm kiếm người phù hợp. Khác với các ứng dụng hẹn hò truyền thống, hệ thống của chúng tôi:
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+- 🤖 **AI-Powered Matching**: Sử dụng Gemini AI để phân tích độ tương thích
+- 📍 **Location-Based Priority**: Ưu tiên người dùng cùng khu vực địa lý  
+- 🎯 **Smart Ranking**: Xếp hạng 50 ứng viên tốt nhất thay vì random
+- ⚡ **Real-time Notifications**: Thông báo tức thời khi có match mới
+- 🔐 **Secure Authentication**: Đăng nhập an toàn với email và Google
 
-## Demo
+## 🛠️ Công Nghệ Sử Dụng
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+| Công nghệ | Mục đích | Version |
+|-----------|----------|---------|
+| **Next.js** | Frontend Framework | 14.x |
+| **TypeScript** | Type Safety | 5.x |
+| **Supabase** | Backend-as-a-Service | Latest |
+| **Gemini AI** | AI Matching Algorithm | Latest |
+| **Tailwind CSS** | UI Styling | 3.x |
+| **Lucide React** | Icons | Latest |
 
-## Deploy to Vercel
+## ✨ Tính Năng Hiện Tại
 
-Vercel deployment will guide you through creating a Supabase account and project.
+### ✅ **Đã Hoàn Thành**
+- 🔐 **Authentication System**
+  - Đăng ký/Đăng nhập bằng Email
+  - Đăng nhập bằng Google OAuth
+  - Reset password qua email
+  - Protected routes & middleware
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+- 👤 **Profile Management**  
+  - Tạo và chỉnh sửa profile đầy đủ
+  - Upload multiple photos
+  - Cài đặt preferences (tuổi, khoảng cách, sở thích)
+  - Location-based settings
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+- 🤖 **AI Matching Engine**
+  - Smart 50-user selection algorithm
+  - Location-first priority matching
+  - Gemini AI compatibility scoring
+  - Dynamic re-ranking system
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+- 💕 **Matching Interface**
+  - Card-based UI giống Tinder
+  - Like/Pass actions
+  - Match detection & notifications
+  - Priority-based user queue
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+- 🔔 **Real-time Notifications**
+  - Push notifications khi có người like
+  - Instant match notifications
+  - Activity status updates
 
-## Clone and run locally
+### 🚧 **Đang Phát Triển**
+- 💬 **Chat System** (Coming Soon)
+  - Real-time messaging
+  - Media sharing (photos, voice notes)
+  - Message encryption
+  - Chat history & search
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+- 📞 **Voice & Video Calls** (Planned)
+  - In-app voice calls
+  - Video chat integration
+  - Call history & recordings
+  - Screen sharing
 
-2. Create a Next.js app using the Supabase Starter template npx command
+- 🎁 **Premium Features** (Future)
+  - Super likes & boosts
+  - See who liked you
+  - Advanced filters
+  - Read receipts
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
+## 📦 Cài Đặt và Chạy Dự Án
+
+### **Bước 1: Clone Repository**
+```bash
+git clone https://github.com/nguyenpc203798/tinder-app.git
+cd tinder-app
+```
+
+### **Bước 2: Cài Đặt Dependencies**
+```bash
+# Sử dụng npm
+npm install
+
+# Hoặc sử dụng yarn
+yarn install
+
+# Hoặc sử dụng pnpm
+pnpm install
+```
+
+### **Bước 3: Cấu Hình Environment Variables**
+Tạo file `.env.local` trong thư mục root:
+
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://uhqulnbkkfrsxkgxeipi.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXVsbmJra2Zyc3hrZ3hlaXBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzNDA2NjAsImV4cCI6MjA2ODkxNjY2MH0.G7i1p3UmdlxKhXeoO-ICpwK1skMojQxC7LipXrQOZeg
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXVsbmJra2Zyc3hrZ3hlaXBpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzM0MDY2MCwiZXhwIjoyMDY4OTE2NjYwfQ.3WyVurCK7uSNtXzZkrZYhI64Ta5oXJuEiUna2sMQPrE
+
+# Gemini AI Configuration  
+GEMINI_API_KEY=AIzaSyCHAhfVuNStd8RokFFJ3mkCEOhUioGD73E
+
+```
+
+### **Bước 4: Chạy Development Server**
+```bash
+npm run dev
+# hoặc
+yarn dev  
+# hoặc
+pnpm dev
+```
+
+Mở [http://localhost:3000](http://localhost:3000) để xem ứng dụng.
+
+## 🗂️ Cấu Trúc Thư Mục
+
+```
+ai-matching-system/
+├── 📁 src/
+│   ├── 📁 app/                    # Next.js App Router
+│   │   ├── 📁 (auth)/            # Authentication pages
+│   │   │   ├── 📁 login/
+│   │   │   └── 📁 register/
+│   │   ├── 📁 (dashboard)/       # Main app pages  
+│   │   │   ├── 📁 profile/
+│   │   │   ├── 📁 matching/
+│   │   │   └── 📁 chat/
+│   │   ├── 📁 api/               # API routes
+│   │   │   ├── 📁 auth/
+│   │   │   ├── 📁 profiles/
+│   │   │   ├── 📁 ranking/
+│   │   │   └── 📁 matches/
+│   │   └── 📄 layout.tsx
+│   ├── 📁 components/            # Reusable components
+│   │   ├── 📁 ui/               # Base UI components
+│   │   ├── 📁 auth/             # Auth-related components  
+│   │   ├── 📁 profile/          # Profile components
+│   │   └── 📁 matching/         # Matching interface
+│   ├── 📁 lib/                  # Utilities & configs
+│   │   ├── 📁 supabase/         # Supabase client & helpers
+│   │   ├── 📁 gemini/           # AI integration
+│   │   └── 📁 utils/            # Helper functions
+│   ├── 📁 types/                # TypeScript type definitions
+│   └── 📁 hooks/                # Custom React hooks
+├── 📁 database/                 # Database schemas & migrations
+├── 📁 public/                   # Static assets
+├── 📄 package.json
+├── 📄 tailwind.config.js
+└── 📄 README.md
+```
+
+## 🔧 Scripts Có Sẵn
+
+```bash
+# Development
+npm run dev          # Chạy development server
+npm run build        # Build production
+npm run start        # Chạy production server
+npm run lint         # Chạy ESLint
+npm run type-check   # Kiểm tra TypeScript
+
+## 📊 Database Schema
+
+### **Bảng Chính:**
+- `user_profile` - Thông tin người dùng chi tiết
+- `matches` - Các cặp đôi đã match
+- `likes` - Lưu trữ dữ liệu like
+- `notificatons` - Lưu trữ thông báo khi có like, match và thông báo
+- `messages` - Tin nhắn chat (coming soon)
+
+## 🤖 AI Matching Algorithm
+
+### **Quy Trình Matching:**
+
+1. **User Selection** (50 users max)
+   - Ưu tiên cùng location (30 users)
+   - Distance-based selection (20 users)
+   - Random fallback nếu thiếu
+
+2. **AI Compatibility Scoring**
+   ```javascript
+   const scoringCriteria = {
+     location_bonus: 30%,      // Cùng khu vực
+     interest_overlap: 25%,    // Sở thích chung  
+     age_compatibility: 15%,   // Độ tuổi phù hợp
+     lifestyle_match: 15%,     // Lối sống tương đồng
+     education_level: 10%,     // Trình độ học vấn
+     personality_traits: 5%    // Tính cách
+   }
    ```
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+## 🚀 Deployment
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
+### **Vercel (Recommended)**
+```bash
+# Cài đặt Vercel CLI
+npm install -g vercel
 
-3. Use `cd` to change into the app's directory
+# Deploy
+vercel
 
-   ```bash
-   cd with-supabase-app
-   ```
+# Set environment variables
+vercel env add NEXT_PUBLIC_SUPABASE_URL
+vercel env add GEMINI_API_KEY
+# ... thêm tất cả env vars
+```
 
-4. Rename `.env.example` to `.env.local` and update the following:
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
+### **Coding Standards:**
+- ✅ TypeScript strict mode
+- ✅ ESLint + Prettier formatting
+- ✅ Component-driven development
+- ✅ Mobile-first responsive design
+- ✅ Comments bằng tiếng Việt
 
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+## 📝 Changelog
 
-5. You can now run the Next.js local development server:
+### **v1.0.0** (Current)
+- ✅ Basic authentication system
+- ✅ Profile management
+- ✅ AI matching algorithm  
+- ✅ Location-based filtering
+- ✅ Real-time notifications
 
-   ```bash
-   npm run dev
-   ```
+### **v1.1.0** (Next Release)
+- 🚧 Chat system implementation
+- 🚧 Media sharing in chat
+- 🚧 Advanced notification settings
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+### **v2.0.0** (Future)
+- 📞 Voice & video calls
+- 🎁 Premium features
+- 🌍 Multi-language support
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+## 📞 Hỗ Trợ
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+- 📧 **Email**: nguyenpc203@gmail.com
 
-## Feedback and issues
+<div align="center">
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+**Made with ❤️ by Phuong Cong Nguyen**
 
-## More Supabase examples
+[⭐ Star this repo](https://github.com/yourusername/ai-matching-system) • [🍴 Fork](https://github.com/yourusername/ai-matching-system/fork) • [📊 Issues](https://github.com/yourusername/ai-matching-system/issues)
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+</div>

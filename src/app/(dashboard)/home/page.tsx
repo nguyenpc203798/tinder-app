@@ -6,14 +6,13 @@ import { ActionButtons } from "@/components/pages/home/ActionButtons";
 import { MatchModal } from '@/components/pages/home/MatchModal';
 import { useToast } from "@/hooks/use-toast";
 import { useUserMatching } from "@/hooks/useUserMatching";
+import { RankedUser } from '@/types/profile';
 import { useHeaderData } from "@/hooks/useHeaderData";
 import { useLike } from "@/hooks/useLike";
 import { useMatch } from "@/hooks/useMatch";
-import { RankedUser } from '@/types/profile';
 
 import "./home.css";
 
-// Định nghĩa type cho swipeCardRef để có thể gọi swipe('right')
 interface SwipeCardHandle {
   swipe: (direction: 'left' | 'right') => void;
 }
@@ -21,14 +20,14 @@ interface SwipeCardHandle {
 const Index = () => {
   const { rankedUsers, isLoading, error, fetchRankedUsers } = useUserMatching();
   const { sendLike, getUsersWhoLikedMe } = useLike();
-  const { handleNewMatch } = useMatch();
-  // const { handleNewNotification } = useNotification(); // Không dùng nên bỏ
+  const { handleNewMatch, getMatchedUserIds } = useMatch();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
   const [matchedProfile, setMatchedProfile] = useState<RankedUser | null>(null);
   const [usersWhoLikedMe, setUsersWhoLikedMe] = useState<Array<string>>([]);
+  const [matchedUserIds, setMatchedUserIds] = useState<Array<string>>([]);
   const { toast } = useToast();
-  const { avatarUrl } = useHeaderData();
+  const { avatarUrl, photos } = useHeaderData();
   const swipeCardRef = useRef<SwipeCardHandle | null>(null); // Nếu có type SwipeCardHandle thì thay unknown bằng type đó
 
   // Load users who liked me for priority display
@@ -36,6 +35,7 @@ const Index = () => {
     const loadUsersWhoLikedMe = async () => {
       try {
         const likedMeIds = await getUsersWhoLikedMe();
+        console.log("likedMeIds", likedMeIds);
         setUsersWhoLikedMe(likedMeIds);
       } catch (error) {
         console.error('Error loading users who liked me:', error);
@@ -44,8 +44,23 @@ const Index = () => {
     loadUsersWhoLikedMe();
   }, [getUsersWhoLikedMe]);
 
-  // Prioritize users who liked me, then sort by AI compatibility score
+  // Load matched user IDs to exclude from swipe stack
+  useEffect(() => {
+    const loadMatchedUserIds = async () => {
+      try {
+        const matchedIds = await getMatchedUserIds();
+        console.log("matchedUserIds", matchedIds);
+        setMatchedUserIds(matchedIds);
+      } catch (error) {
+        console.error('Error loading matched user IDs:', error);
+      }
+    };
+    loadMatchedUserIds();
+  }, [getMatchedUserIds]);
+
+  // Filter out matched users, prioritize users who liked me, then sort by AI compatibility score
   const profiles = rankedUsers
+    .filter((user) => !matchedUserIds.includes(user.id || "")) // Lọc bỏ người đã match
     .map((user) => ({
       ...user,
       id: user.id || "", // Đảm bảo id luôn là string
@@ -96,8 +111,8 @@ const Index = () => {
           });
         } else {
           toast({
-            title: "Like gửi thành công! 💖",
-            description: `Bạn đã like ${profile.name}`,
+            title: "Liked! 💖",
+            description: `You liked ${profile.name}`,
           });
         }
       } catch (error) {
@@ -106,8 +121,8 @@ const Index = () => {
     } else {
       // Pass
       toast({
-        title: "Đã bỏ qua",
-        description: `Bạn đã bỏ qua ${profile.name}`,
+        title: "Skipped",
+        description: `You skipped ${profile.name}`,
       });
     }
     
@@ -136,8 +151,8 @@ const Index = () => {
         try {
           await sendLike(currentProfile.id);
           toast({
-            title: "Super Like gửi thành công! ⭐",
-            description: `Bạn đã super like ${currentProfile.name}`,
+            title: "Super Like sent! ⭐",
+            description: `You super liked ${currentProfile.name}`,
           });
           
           // Check for match
@@ -191,10 +206,10 @@ const Index = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500 mx-auto mb-4"></div>
           <p className="text-lg text-gray-600">
-            Đang tìm kiếm những người phù hợp với bạn...
+            Searching for compatible matches...
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            AI đang phân tích và xếp hạng các profile
+            AI is analyzing and ranking profiles
           </p>
         </div>
       </div>
@@ -222,13 +237,13 @@ const Index = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-lg text-gray-600 mb-4">
-            Không tìm thấy người dùng phù hợp
+            No matching users found
           </p>
           <button
             onClick={fetchRankedUsers}
             className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
           >
-            Tải lại
+            Reload
           </button>
         </div>
       </div>
@@ -295,8 +310,15 @@ const Index = () => {
         <MatchModal
           isOpen={showMatch}
           onClose={() => setShowMatch(false)}
-          userImage={avatarUrl || "/default-avatar.png"}
-          matchImage={matchedProfile?.photos?.[0] || "/default-avatar.png"}
+          userImage={
+            (photos && photos.length > 0 && photos[0]) ||
+            avatarUrl ||
+            "/default-avatar.png"
+          }
+          matchImage={
+            (matchedProfile?.photos && matchedProfile.photos.length > 0 && matchedProfile.photos[0]) ||
+            "/default-avatar.png"
+          }
           matchName={matchedProfile?.name || "Someone"}
         />
       )}

@@ -97,6 +97,29 @@ export class MatchService implements IMatchService {
     return data || [];
   }
 
+  // Get list of user IDs that current user has already matched with
+  async getMatchedUserIds(): Promise<string[]> {
+    const supabase = await createClientForServer();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const { data, error } = await supabase
+      .from("matches")
+      .select("user1_id, user2_id")
+      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+
+    if (error) throw new Error(`Failed to get matched user IDs: ${error.message}`);
+    
+    // Extract the other user's ID from each match
+    const matchedUserIds = (data || []).map((match: { user1_id: string; user2_id: string }) => {
+      return match.user1_id === user.id ? match.user2_id : match.user1_id;
+    });
+
+    return matchedUserIds;
+  }
+
   // Subscribe to new matches (realtime)
   subscribeToMatches(callback: (match: Match) => void): () => void {
     (async () => {

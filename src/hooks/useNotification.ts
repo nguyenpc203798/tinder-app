@@ -3,7 +3,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import type { NotificationWithProfile, UseNotificationReturn } from '@/types/tinder';
+import { createClient } from '@/lib/supabase/client';
+import type { NotificationWithProfile, UseNotificationReturn, Notification } from '@/types/tinder';
 
 export function useNotification(): UseNotificationReturn {
   const [notifications, setNotifications] = useState<NotificationWithProfile[]>([]);
@@ -25,7 +26,7 @@ export function useNotification(): UseNotificationReturn {
       const { data } = await response.json();
       setNotifications(data || []);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Lỗi khi tải thông báo';
+      const errorMessage = err instanceof Error ? err.message : 'Error fetching notifications';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -78,7 +79,7 @@ export function useNotification(): UseNotificationReturn {
       // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Lỗi khi đánh dấu đã đọc';
+      const errorMessage = err instanceof Error ? err.message : 'Error marking notification as read';
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
@@ -108,20 +109,16 @@ export function useNotification(): UseNotificationReturn {
         prev.map(notification => ({ ...notification, is_read: true }))
       );
       setUnreadCount(0);
-      
-      toast.success('Đã đánh dấu tất cả thông báo là đã đọc');
+
+      toast.success("Seen all notifications");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Lỗi khi đánh dấu tất cả đã đọc';
+      const errorMessage =
+        err instanceof Error ? err.message : "Error marking all notifications as read";
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
     }
   }, []);
-
-  // Refresh notifications data
-  const refreshNotifications = useCallback(async () => {
-    await Promise.all([fetchNotifications(), fetchUnreadCount()]);
-  }, [fetchNotifications, fetchUnreadCount]);
 
   // Handle new notification (realtime)
   const handleNewNotification = useCallback((notification: NotificationWithProfile) => {
@@ -137,14 +134,61 @@ export function useNotification(): UseNotificationReturn {
 
   // Subscribe to new notifications (realtime)
   const subscribeToNotifications = useCallback(() => {
-    // This will be implemented with Supabase realtime
-    // For now, we'll use polling as fallback
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-    }, 30000); // Poll every 30 seconds
+    const supabase = createClient();
+    
+    // Get current user first
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return () => {};
 
-    return () => clearInterval(interval);
-  }, [fetchUnreadCount]);
+      const subscription = supabase
+        .channel('notifications-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          async (payload: { new: Notification }) => {
+            // Fetch full notification data with profile
+            await fetchNotifications();
+            await fetchUnreadCount();
+            console.log('New notification:', payload.new);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`
+          },
+          async (payload: { new: Notification }) => {
+            // Update notification in local state
+            await fetchNotifications();
+            await fetchUnreadCount();
+            console.log('Updated notification:', payload.new);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    let unsubscribe: (() => void) | null = null;
+    setupSubscription().then(unsub => {
+      unsubscribe = unsub;
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [fetchNotifications, fetchUnreadCount]);
 
   // Load data on mount
   useEffect(() => {
@@ -154,6 +198,30 @@ export function useNotification(): UseNotificationReturn {
     return unsubscribe;
   }, [fetchNotifications, fetchUnreadCount, subscribeToNotifications]);
 
+  // Helper function to get notification message
+  function getNotificationMessage(notification: NotificationWithProfile) {
+    const senderName = notification.from_profile?.name || 'Ai đó';
+    switch (notification.type) {
+      case 'like':
+        return `${senderName} liked you`;
+      case 'match':
+        return `You have a new match with ${senderName}!`;
+      case "message":
+        return `${senderName} sent you a message`;
+      default:
+        return "New notification";
+    }
+  }
+
+  // Handler for notification click
+  const handleNotificationClick = useCallback(async (notification: NotificationWithProfile) => {
+    if (!notification.is_read) {
+      await markAsRead(notification.id);
+    }
+    // TODO: Navigate to appropriate page based on notification type
+    console.log('Notification clicked:', notification);
+  }, [markAsRead]);
+
   return {
     notifications,
     unreadCount,
@@ -161,23 +229,9 @@ export function useNotification(): UseNotificationReturn {
     error,
     markAsRead,
     markAllAsRead,
-    refreshNotifications,
+    subscribeToNotifications,
     handleNewNotification,
+    getNotificationMessage,
+    handleNotificationClick,
   };
-}
-
-// Helper function to get notification message
-function getNotificationMessage(notification: NotificationWithProfile): string {
-  const fromName = notification.from_profile?.name || 'Ai đó';
-  
-  switch (notification.type) {
-    case 'like':
-      return `💖 ${fromName} đã like bạn!`;
-    case 'match':
-      return `🎉 Bạn có match mới với ${fromName}!`;
-    case 'message':
-      return `💬 ${fromName} đã gửi tin nhắn cho bạn`;
-    default:
-      return 'Bạn có thông báo mới';
-  }
 }

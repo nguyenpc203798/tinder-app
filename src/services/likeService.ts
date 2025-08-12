@@ -2,12 +2,20 @@
 import { createClientForServer } from '@/lib/supabase/server';
 import type { Like, ILikeService } from '@/types/tinder';
 
+
 export class LikeService implements ILikeService {
 
   async sendLike(receiverId: string): Promise<Like> {
     const supabase = await createClientForServer();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
+
+    // Kiểm tra đã like chưa
+    const alreadyLiked = await this.hasLiked(receiverId);
+    if (alreadyLiked) {
+      throw new Error('You have already liked this user');
+    }
+
     const { data, error } = await supabase
       .from('likes')
       .insert({ sender_id: user.id, receiver_id: receiverId })

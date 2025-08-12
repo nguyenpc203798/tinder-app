@@ -8,7 +8,7 @@ import type { UserProfile } from "@/types/profile";
 
 
 interface SwipeCardProps {
-  profile: UserProfile & { image: string | StaticImageData };
+  profile: UserProfile & { image: string | StaticImageData; hasLikedMe?: boolean };
   onSwipe: (direction: "left" | "right", profileId: string | number) => void;
   style?: React.CSSProperties;
 }
@@ -153,6 +153,16 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+        {/* Đánh dấu nếu người này đã like mình */}
+        {profile.hasLikedMe && (
+          <Badge className="absolute top-4 left-4 bg-primary text-white border-0 z-20 flex items-center gap-1 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
+            </svg>
+            Liked you
+          </Badge>
+        )}
 
         {/* Distance Badge */}
         <Badge className="absolute top-4 right-4 bg-white/90 text-primary border-0">

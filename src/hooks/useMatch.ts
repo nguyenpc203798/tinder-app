@@ -38,6 +38,21 @@ export function useMatch(): UseMatchReturn {
     return matches.find(match => match.id === matchId) || null;
   }, [matches]);
 
+  // Get matched user IDs
+  const getMatchedUserIds = useCallback(async (): Promise<string[]> => {
+    try {
+      const response = await fetch('/api/matches/matched-users');
+      if (!response.ok) {
+        throw new Error('Failed to fetch matched user IDs');
+      }
+      const { data } = await response.json();
+      return data || [];
+    } catch (err) {
+      console.error('Error fetching matched user IDs:', err);
+      return [];
+    }
+  }, []);
+
   // Handle new match notification
   const handleNewMatch = useCallback((newMatch: MatchWithProfiles) => {
     setMatches(prev => [newMatch, ...prev]);
@@ -108,5 +123,6 @@ export function useMatch(): UseMatchReturn {
     refreshMatches,
     getMatchById,
     handleNewMatch,
+    getMatchedUserIds,
   };
 }

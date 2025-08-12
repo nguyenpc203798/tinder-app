@@ -61,11 +61,9 @@ export function useLike(): UseLikeReturn {
       
       // Update local state
       setLikesSent(prev => [newLike, ...prev]);
-      setLikedUserIds(prev => new Set([...prev, receiverId]));
-      
-      toast.success('Đã gửi like thành công! 💖');
+      setLikedUserIds(prev => new Set([...prev, receiverId]));      
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Lỗi khi gửi like';
+      const errorMessage = err instanceof Error ? err.message : 'Error sending like';
       setError(errorMessage);
       toast.error(errorMessage);
       throw err;
