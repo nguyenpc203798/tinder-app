@@ -15,6 +15,13 @@ export interface Match {
   matched_at: string;
 }
 
+export interface Pass {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  created_at: string;
+}
+
 export interface Notification {
   id: string;
   user_id: string;
@@ -99,6 +106,13 @@ export interface IMessageService {
   subscribeToMessages(matchId: string, callback: (message: Message) => void): () => void;
 }
 
+export interface IPassService {
+  sendPass(receiverId: string): Promise<Pass>;
+  getPassesSent(): Promise<Pass[]>;
+  getPassedUserIds(): Promise<string[]>;
+  hasPassedUser(receiverId: string): Promise<boolean>;
+}
+
 // Hook return types
 export interface UseLikeReturn {
   sendLike: (receiverId: string) => Promise<void>;
@@ -144,4 +158,14 @@ export interface UseMessageReturn {
   markAllAsRead: () => Promise<void>;
   refreshMessages: () => Promise<void>;
   handleNewMessage: (message: Message) => void;
+}
+
+export interface UsePassReturn {
+  sendPass: (receiverId: string) => Promise<void>;
+  hasPassedUser: (receiverId: string) => boolean;
+  passesSent: Pass[];
+  passedUserIds: string[];
+  isLoading: boolean;
+  error: string | null;
+  refreshPasses: () => Promise<void>;
 }

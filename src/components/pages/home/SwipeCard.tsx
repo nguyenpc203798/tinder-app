@@ -148,6 +148,7 @@ export const SwipeCard = ({ profile, onSwipe, style }: SwipeCardProps) => {
           src={profile.image}
           alt={profile.name}
           fill
+          sizes="(max-width: 640px) 100vw, 320px"
           className="w-full h-full object-cover"
         />
 

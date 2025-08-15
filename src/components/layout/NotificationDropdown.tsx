@@ -22,7 +22,6 @@ export const NotificationDropdown = ({
     unreadCount,
     isLoading,
     markAllAsRead,
-    subscribeToNotifications,
     getNotificationMessage,
     handleNotificationClick,
   } = useNotification();
@@ -56,12 +55,6 @@ export const NotificationDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Setup realtime subscription for notifications
-  useEffect(() => {
-    const unsubscribe = subscribeToNotifications();
-    return unsubscribe;
-  }, [subscribeToNotifications]);
-
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       {/* Bell Icon with Badge */}
@@ -82,9 +75,9 @@ export const NotificationDropdown = ({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
+        <div className="absolute right-[-87px] sm:right-[-69px] md:right-0 mt-2 w-80 bg-card rounded-lg shadow-lg border border-secondary z-50 max-h-96 overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+          <div className="px-4 py-3 border-b border-secondary flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
               <button
@@ -167,7 +160,7 @@ export const NotificationDropdown = ({
                 }}
                 className="w-full text-center text-sm text-primary hover:text-primary/80 font-medium"
               >
-                Xem tất cả thông báo
+                Read all notifications
               </button>
             </div>
           )}

@@ -128,65 +128,99 @@ export function useNotification(): UseNotificationReturn {
     // Show toast based on notification type
     const message = getNotificationMessage(notification);
     toast.success(message, {
-      duration: 5000,
+      duration: 3000,
     });
   }, []);
 
   // Subscribe to new notifications (realtime)
   const subscribeToNotifications = useCallback(() => {
     const supabase = createClient();
+    let subscription: ReturnType<typeof supabase.channel> | null = null;
+    let isCleanedUp = false;
     
-    // Get current user first
+    // Get current user and setup subscription
     const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return () => {};
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || isCleanedUp) {
+          console.warn('No user found or component cleaned up');
+          return;
+        }
 
-      const subscription = supabase
-        .channel('notifications-realtime')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`
-          },
-          async (payload: { new: Notification }) => {
-            // Fetch full notification data with profile
-            await fetchNotifications();
-            await fetchUnreadCount();
-            console.log('New notification:', payload.new);
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`
-          },
-          async (payload: { new: Notification }) => {
-            // Update notification in local state
-            await fetchNotifications();
-            await fetchUnreadCount();
-            console.log('Updated notification:', payload.new);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
+        subscription = supabase
+          .channel(`notifications-realtime-${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            async (payload: { new: Notification }) => {
+              if (isCleanedUp) return;
+              console.log('New notification received:', payload.new);
+              try {
+                await fetchNotifications();
+                await fetchUnreadCount();
+              } catch (error) {
+                console.error('Error handling new notification:', error);
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            async (payload: { new: Notification }) => {
+              if (isCleanedUp) return;
+              console.log('Notification updated:', payload.new);
+              try {
+                await fetchNotifications();
+                await fetchUnreadCount();
+              } catch (error) {
+                console.error('Error handling notification update:', error);
+              }
+            }
+          )
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+            if (status === 'CLOSED' && !isCleanedUp) {
+              console.warn('Subscription closed unexpectedly, attempting to reconnect...');
+              setTimeout(() => {
+                if (!isCleanedUp) {
+                  setupSubscription();
+                }
+              }, 5000);
+            }
+          });
+      } catch (error) {
+        console.error('Error setting up notification subscription:', error);
+        // Retry after 10 seconds if not cleaned up
+        if (!isCleanedUp) {
+          setTimeout(() => {
+            if (!isCleanedUp) {
+              setupSubscription();
+            }
+          }, 10000);
+        }
+      }
     };
 
-    let unsubscribe: (() => void) | null = null;
-    setupSubscription().then(unsub => {
-      unsubscribe = unsub;
-    });
+    setupSubscription();
 
+    // Return cleanup function
     return () => {
-      if (unsubscribe) unsubscribe();
+      isCleanedUp = true;
+      if (subscription) {
+        console.log('Unsubscribing from notifications');
+        subscription.unsubscribe();
+        subscription = null;
+      }
     };
   }, [fetchNotifications, fetchUnreadCount]);
 
@@ -194,13 +228,18 @@ export function useNotification(): UseNotificationReturn {
   useEffect(() => {
     fetchNotifications();
     fetchUnreadCount();
+  }, [fetchNotifications, fetchUnreadCount]);
+
+  // Setup realtime subscription (separate effect to avoid re-subscription)
+  useEffect(() => {
     const unsubscribe = subscribeToNotifications();
     return unsubscribe;
-  }, [fetchNotifications, fetchUnreadCount, subscribeToNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array to run only once - intentionally ignoring subscribeToNotifications to prevent re-subscription loops
 
   // Helper function to get notification message
   function getNotificationMessage(notification: NotificationWithProfile) {
-    const senderName = notification.from_profile?.name || 'Ai đó';
+    const senderName = notification.from_profile?.name || 'Someone';
     switch (notification.type) {
       case 'like':
         return `${senderName} liked you`;

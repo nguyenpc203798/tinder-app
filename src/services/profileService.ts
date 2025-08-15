@@ -26,6 +26,7 @@ export interface IProfileService {
 }
 
 export class ProfileService implements IProfileService {
+  
   async getProfile(userId: string): Promise<UserProfile | null> {
     const supabase = await createClientForServer();
     try {

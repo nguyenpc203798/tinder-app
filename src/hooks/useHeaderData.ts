@@ -28,7 +28,7 @@ export function useHeaderData(): UseUserResult {
         // Lấy photos từ bảng user_profile
         const { data: profile, error } = await supabase
           .from('user_profile')
-          .select('photos')
+          .select('photos',)
           .eq('id', data.user.id)
           .single();
         if (!error && profile && profile.photos) {

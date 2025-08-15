@@ -4,76 +4,40 @@ import { useState, useEffect, useRef } from "react";
 import { SwipeCard } from "@/components/pages/home/SwipeCard";
 import { ActionButtons } from "@/components/pages/home/ActionButtons";
 import { MatchModal } from '@/components/pages/home/MatchModal';
+
 import { useToast } from "@/hooks/use-toast";
 import { useUserMatching } from "@/hooks/useUserMatching";
 import { RankedUser } from '@/types/profile';
 import { useHeaderData } from "@/hooks/useHeaderData";
 import { useLike } from "@/hooks/useLike";
 import { useMatch } from "@/hooks/useMatch";
+import { usePass } from "@/hooks/usePass";
 
 import "./home.css";
-
 interface SwipeCardHandle {
-  swipe: (direction: 'left' | 'right') => void;
+  swipe: (direction: "left" | "right") => void;
 }
 
 const Index = () => {
   const { rankedUsers, isLoading, error, fetchRankedUsers } = useUserMatching();
-  const { sendLike, getUsersWhoLikedMe } = useLike();
-  const { handleNewMatch, getMatchedUserIds } = useMatch();
+  const { sendLike } = useLike();
+  const { handleNewMatch } = useMatch();
+  const { sendPass } = usePass();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showMatch, setShowMatch] = useState(false);
   const [matchedProfile, setMatchedProfile] = useState<RankedUser | null>(null);
-  const [usersWhoLikedMe, setUsersWhoLikedMe] = useState<Array<string>>([]);
-  const [matchedUserIds, setMatchedUserIds] = useState<Array<string>>([]);
+  const swipeCardRef = useRef<SwipeCardHandle | null>(null);
   const { toast } = useToast();
   const { avatarUrl, photos } = useHeaderData();
-  const swipeCardRef = useRef<SwipeCardHandle | null>(null); // Nếu có type SwipeCardHandle thì thay unknown bằng type đó
 
-  // Load users who liked me for priority display
-  useEffect(() => {
-    const loadUsersWhoLikedMe = async () => {
-      try {
-        const likedMeIds = await getUsersWhoLikedMe();
-        console.log("likedMeIds", likedMeIds);
-        setUsersWhoLikedMe(likedMeIds);
-      } catch (error) {
-        console.error('Error loading users who liked me:', error);
-      }
-    };
-    loadUsersWhoLikedMe();
-  }, [getUsersWhoLikedMe]);
+  // Vì logic lọc đã chuyển xuống database, chỉ cần map data để hiển thị
+  const profiles = rankedUsers.map((user) => ({
+    ...user,
+    id: user.id || "", // Đảm bảo id luôn là string
+    image: user.photos?.[0] || avatarUrl || "/default-avatar.png",
+    // Database đã sắp xếp theo ưu tiên người đã like mình và AI compatibility score
+  }));
 
-  // Load matched user IDs to exclude from swipe stack
-  useEffect(() => {
-    const loadMatchedUserIds = async () => {
-      try {
-        const matchedIds = await getMatchedUserIds();
-        console.log("matchedUserIds", matchedIds);
-        setMatchedUserIds(matchedIds);
-      } catch (error) {
-        console.error('Error loading matched user IDs:', error);
-      }
-    };
-    loadMatchedUserIds();
-  }, [getMatchedUserIds]);
-
-  // Filter out matched users, prioritize users who liked me, then sort by AI compatibility score
-  const profiles = rankedUsers
-    .filter((user) => !matchedUserIds.includes(user.id || "")) // Lọc bỏ người đã match
-    .map((user) => ({
-      ...user,
-      id: user.id || "", // Đảm bảo id luôn là string
-      image: user.photos?.[0] || avatarUrl || "/default-avatar.png",
-      hasLikedMe: usersWhoLikedMe.includes(user.id || ""),
-    }))
-    .sort((a, b) => {
-      // Ưu tiên người đã like mình trước
-      if (a.hasLikedMe && !b.hasLikedMe) return -1;
-      if (!a.hasLikedMe && b.hasLikedMe) return 1;
-      // Sau đó sort theo AI compatibility score
-      return (b.compatibilityScore || 0) - (a.compatibilityScore || 0);
-    });
 
   const currentProfile = profiles[currentIndex];
   const nextProfile = profiles[currentIndex + 1];
@@ -90,26 +54,54 @@ const Index = () => {
       try {
         await sendLike(profile.id);
         
-        // Check if it's a match (they already liked us)
-        if (profile.hasLikedMe) {
-          setMatchedProfile(profile);
-          setShowMatch(true);
-          
-          // Handle new match notification
-          handleNewMatch({
-            id: `temp-${Date.now()}`,
-            user1_id: profile.id,
-            user2_id: "current-user", // Will be replaced by actual user ID
-            matched_at: new Date().toISOString(),
-            user1_profile: {
-              id: profile.id,
-              name: profile.name,
-              photos: profile.photos,
-              age: profile.age || 25,
+        // Check for potential match by calling API
+        try {
+          const response = await fetch('/api/matches/check', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-            user2_profile: undefined,
+            body: JSON.stringify({ user_id: profile.id }),
           });
-        } else {
+
+          if (response.ok) {
+            const { data } = await response.json();
+            if (data.isMatch) {
+              // It's a match! Show match modal
+              setMatchedProfile(profile);
+              setShowMatch(true);
+              
+              // Handle new match notification
+              handleNewMatch({
+                id: data.match.id,
+                user1_id: data.match.user1_id,
+                user2_id: data.match.user2_id,
+                matched_at: data.match.matched_at,
+                user1_profile: {
+                  id: profile.id,
+                  name: profile.name,
+                  photos: profile.photos,
+                  age: profile.age || 25,
+                },
+                user2_profile: undefined,
+              });
+            } else {
+              // Just a like, show success message
+              toast({
+                title: "Liked! 💖",
+                description: `You liked ${profile.name}`,
+              });
+            }
+          } else {
+            // Fallback to just showing like success
+            toast({
+              title: "Liked! 💖",
+              description: `You liked ${profile.name}`,
+            });
+          }
+        } catch (matchCheckError) {
+          console.error('Error checking match:', matchCheckError);
+          // Fallback to just showing like success
           toast({
             title: "Liked! 💖",
             description: `You liked ${profile.name}`,
@@ -119,11 +111,20 @@ const Index = () => {
         console.error('Error sending like:', error);
       }
     } else {
-      // Pass
-      toast({
-        title: "Skipped",
-        description: `You skipped ${profile.name}`,
-      });
+      // Pass - ghi vào database
+      try {
+        await sendPass(profile.id);
+        toast({
+          title: "Passed",
+          description: `You passed ${profile.name}`,
+        });
+      } catch (error) {
+        console.error('Error sending pass:', error);
+        toast({
+          title: "Error",
+          description: "Failed to pass user",
+        });
+      }
     }
     
     // Chuyển sang profile tiếp theo
@@ -155,11 +156,8 @@ const Index = () => {
             description: `You super liked ${currentProfile.name}`,
           });
           
-          // Check for match
-          if (currentProfile.hasLikedMe) {
-            setMatchedProfile(currentProfile);
-            setShowMatch(true);
-          }
+          // Match detection will be handled by backend notifications
+          // No need to check hasLikedMe here since database query handles filtering
         } catch (error) {
           console.error('Error sending super like:', error);
         }
@@ -176,15 +174,6 @@ const Index = () => {
         break;
     }
   };
-
-  // Setup realtime match subscription
-  useEffect(() => {
-    // This will automatically handle new matches via realtime
-    // No need for polling, the subscription will trigger handleNewMatch
-    return () => {
-      // Cleanup handled by useMatch hook
-    };
-  }, []);
 
   // Reset profiles when we run out
   useEffect(() => {
